@@ -136,7 +136,7 @@ func formatAddition(expression *Expression) (result string) {
 				} else { // Single impactful term → behaves like atomic
 					subStrings = append(
 						subStrings,
-						fmt.Sprintf("%s", subString),
+						subString,
 					)
 				}
 
@@ -352,22 +352,27 @@ func formatPower(expression *Expression) string {
 }
 
 func formatSin(expression *Expression) string {
+	fmt.Printf("%T\n", expression)
 	return ""
 }
 
 func formatCos(expression *Expression) string {
+	fmt.Printf("%T\n", expression)
 	return ""
 }
 
 func formatTan(expression *Expression) string {
+	fmt.Printf("%T\n", expression)
 	return ""
 }
 
 func formatLog(expression *Expression) string {
+	fmt.Printf("%T\n", expression)
 	return ""
 }
 
 func formatExp(expression *Expression) string {
+	fmt.Printf("%T\n", expression)
 	return ""
 }
 

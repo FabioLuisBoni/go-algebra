@@ -140,6 +140,7 @@ func (cache *ExpressionCache) setBits(key CacheKey, width int, value uint64) {
 /*
 ClearCacheKey resets the whole cache.
 */
+//nolint:unused
 func (cache *ExpressionCache) clearCache() {
 	cache.Evaluated = 0x0
 	cache.String = ""
