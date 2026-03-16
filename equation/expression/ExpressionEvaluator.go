@@ -599,6 +599,7 @@ func isApproximate(a float64, b float64) bool {
 	return math.Abs(a-b) < APPROXIMATION_EPSILON
 }
 
+//nolint:unused
 func periodicMatch(value float64, base float64, period float64) bool {
 	var k float64 = math.Round((value - base) / period)
 	var expected float64 = base + k*period
