@@ -28,7 +28,7 @@ import (
 )
 
 func TestBaseOnLeastSquares(t *testing.T) {
-	t.Logf("testing ExtractBaseExpressions for LeastSquares\n\n")
+	t.Logf("testing BaseOn for LeastSquares\n\n")
 	var signature string = "f(x)"
 	var value_integer_1 int = 2
 	var value_integer_2 int = 1
@@ -101,7 +101,7 @@ func TestBaseOnLeastSquares(t *testing.T) {
 		t.Fatalf("error with least squares\nexpected: %#v\ngot     : %#v", expected, method)
 	}
 
-	t.Logf("finished testing ExtractBaseExpressions for LeastSquares\n\n")
+	t.Logf("finished testing BaseOn for LeastSquares\n\n")
 }
 
 func TestSolveLeastSquares(t *testing.T) {
