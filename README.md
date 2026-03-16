@@ -25,7 +25,7 @@
 >       1. **[Frame Component](#frame-component)**
 >           1. **[Constructor Methods](#constructor-methods-3)**
 >           1. **[Action Methods](#action-methods-3)**
->   1. **[AST Structuring](#ast-structuring-for-other-languages)**
+>   1. **[AST Structuring](#ast-structuring)**
 >   1. **[KNOWN ISSUES](#known-issues)**
 >   1. **[TODO](#todo)**
 > 
