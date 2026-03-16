@@ -35,10 +35,14 @@ Cache key from ExpressionCache.Evaluated, expect [Ran][Result] status pair (2
 bits).
 */
 const (
-	CACHE_IS_CONSTANT CacheKey = 1 + CACHE_STRING + iota*2
+	CACHE_IS_MALFORMED_STRUCTURE CacheKey = 1 + CACHE_STRING + iota*2
+	CACHE_IS_INDEFINITENESS
+	CACHE_IS_CONSTANT
 	CACHE_IS_ZERO
 	CACHE_IS_ABSOLUTE_ONE
 	CACHE_IS_EULER
+	CACHE_IS_FRACTION
+	CACHE_IS_INTEGER
 	CACHE_IS_EVEN_INTEGER
 	CACHE_IS_ODD_INTEGER
 	CACHE_IS_SIGNAL_INVERTIBLE // Keep this as last entry to avoid unnecessary complexity related to next pattern of keys.
@@ -49,7 +53,7 @@ Cache key from ExpressionCache.Evaluated, expect [Ran][Result][Applicable]
 status trio (3 bits).
 */
 const (
-	IS_NEGATIVE CacheKey = 1 + CACHE_IS_SIGNAL_INVERTIBLE + iota*3 // Keep this as last entry to avoid unnecessary complexity related to next pattern of keys.
+	CACHE_IS_NEGATIVE CacheKey = 1 + CACHE_IS_SIGNAL_INVERTIBLE + iota*3 // Keep this as last entry to avoid unnecessary complexity related to next pattern of keys.
 )
 
 /*
@@ -140,8 +144,205 @@ func (cache *ExpressionCache) setBits(key CacheKey, width int, value uint64) {
 /*
 ClearCacheKey resets the whole cache.
 */
-//nolint:unused
 func (cache *ExpressionCache) clearCache() {
 	cache.Evaluated = 0x0
 	cache.String = ""
+}
+
+/*
+As a malformed expression, any operation is false, since it has no mathematical meaning.
+*/
+func (cache *ExpressionCache) setMalformedStructure(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, false)
+		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
+		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
+
+		_, _ = cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, false)
+
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, true)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, result)
+}
+
+/*
+As a indefiniteness, any operation is false, since it has no mathematical meaning.
+*/
+func (cache *ExpressionCache) setIndefiniteness(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, false)
+		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
+		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
+
+		_, _ = cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, false)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_INDEFINITENESS, result)
+}
+
+func (cache *ExpressionCache) setConstant(result bool) bool {
+	if !result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
+		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_CONSTANT, result)
+}
+
+func (cache *ExpressionCache) setZero(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, true)
+		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, true)
+
+		_, _ = cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, true)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_ZERO, result)
+}
+
+func (cache *ExpressionCache) setAbsoluteOne(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, true)
+		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, true)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, result)
+}
+
+func (cache *ExpressionCache) setEuler(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
+		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, true)
+
+		_, _ = cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, true)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_EULER, result)
+}
+
+func (cache *ExpressionCache) setFraction(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
+		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_FRACTION, result)
+}
+
+func (cache *ExpressionCache) setInteger(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_INTEGER, result)
+}
+
+func (cache *ExpressionCache) setEvenInteger(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, true)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, result)
+}
+
+func (cache *ExpressionCache) setOddInteger(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+
+		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		_ = cache.setRanResultPair(CACHE_IS_INTEGER, true)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_ODD_INTEGER, result)
+}
+
+func (cache *ExpressionCache) setSignalInvertible(result bool) bool {
+	if result {
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+	}
+
+	return cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, result)
+}
+
+func (cache *ExpressionCache) setNegative(result bool, applicable bool) (bool, bool) {
+	if result {
+		applicable = true
+
+		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+	}
+
+	return cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, result, applicable)
 }
