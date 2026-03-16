@@ -31,6 +31,21 @@ type Expression struct {
 	Cache ExpressionCache `json:"-"`
 }
 
+/*
+Presents a simplified, human readable and GeoGebra friendly algebraic notation
+formatted string.
+
+The division '/' and root '√' will be completely omitted due to the
+complexities and heavy computation for a reliable representation.
+
+Instead, keep in mind that:
+  - Negative exponents represents inverse values.
+  - Fraction (float64) exponents are roots.
+  - Divisions are multiplication by inverse values.
+  - x^(-1.5) is analog to 1/√(x^3)
+  - x^(-1.3478) is analog to something like 1/√(x^6739, 5000), and the reason
+    to avoid this notation, not readable and breaks GeoGebra friendly policy.
+*/
 func (expression *Expression) String() string {
 	return algebraicString(expression)
 }
@@ -168,17 +183,16 @@ func (expression *Expression) Execute(operator float64) (result float64) {
 		return math.NaN()
 	}
 
+	if expression.IsIndefiniteness() {
+		return math.NaN()
+	}
+
 	switch expression.Type {
 	case INTEGER, FLOAT:
-		if expression.Value == nil {
-			return math.NaN()
-		}
 		return *expression.Value
 
 	case SYMBOL:
 		switch expression.Name {
-		case "":
-			return math.NaN()
 		case "e":
 			return math.E
 		case "pi":
@@ -197,76 +211,263 @@ func (expression *Expression) Execute(operator float64) (result float64) {
 		return operator
 
 	case ADDITION:
-		for _, argument := range expression.Arguments {
-			result += argument.Execute(operator)
+		for _, branch := range expression.Arguments {
+			result += branch.Execute(operator)
 		}
 		return result
 
 	case MULTIPLICATION:
 		result = 1
-		for _, argument := range expression.Arguments {
-			result *= argument.Execute(operator)
+		for _, branch := range expression.Arguments {
+			result *= branch.Execute(operator)
 		}
 		return result
 
 	case POWER:
-		if len(expression.Arguments) != 2 {
-			return math.NaN()
-		}
+		return math.Pow(
+			expression.Arguments[0].Execute(operator),
+			expression.Arguments[1].Execute(operator),
+		)
 
-		var base float64 = expression.Arguments[0].Execute(operator)
-		var exponent float64 = expression.Arguments[1].Execute(operator)
+	case EXPONENTIAL:
+		return math.Exp(expression.Arguments[0].Execute(operator))
 
-		if base == 0 && exponent == 0 {
-			return math.NaN()
-		}
-
-		return math.Pow(base, exponent)
-
-	case SIN:
-		if len(expression.Arguments) != 1 {
-			return math.NaN()
-		}
+	case SINE:
 		return math.Sin(expression.Arguments[0].Execute(operator))
 
-	case COS:
-		if len(expression.Arguments) != 1 {
-			return math.NaN()
-		}
+	case COSINE:
 		return math.Cos(expression.Arguments[0].Execute(operator))
 
-	case TAN:
-		if len(expression.Arguments) != 1 {
-			return math.NaN()
-		}
+	case TANGENT:
 		return math.Tan(expression.Arguments[0].Execute(operator))
 
 	case LOGARITHMIC:
-		switch len(expression.Arguments) {
-		case 1:
+		if len(expression.Arguments) == 1 {
 			return math.Log(expression.Arguments[0].Execute(operator))
 
-		case 2:
-			var value float64 = expression.Arguments[0].Execute(operator)
-			var base float64 = expression.Arguments[1].Execute(operator)
-
-			if base <= 0 || base == 1 {
-				return math.NaN()
-			}
-
-			return math.Log(value) / math.Log(base)
-
-		default:
-			return math.NaN()
+		} else {
+			return math.Log(expression.Arguments[0].Execute(operator)) / math.Log(expression.Arguments[1].Execute(operator))
 		}
-
-	case EXPONENTIAL:
-		if len(expression.Arguments) != 1 {
-			return math.NaN()
-		}
-		return math.Exp(expression.Arguments[0].Execute(operator))
 
 	default:
 		return math.NaN()
 	}
+}
+
+/*
+Returns if the both expressions are equals.
+
+The comparisons goes deep, caring about behavior rather than structure,
+simplifying sub-trees to reach the answer.
+
+For example:
+
+	Pow(Symbol("x"), Int(0)) == Sin(Symbol("pi").Divide(Int(2)))
+*/
+func (expression *Expression) Equal(other *Expression) bool {
+	if expression == nil || other == nil {
+		return expression == other
+	}
+
+	if expression.IsConstant() && other.IsConstant() { // Cover all format that leads to same results, like x^0 == cos(0).
+		return isApproximate(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER), other.Execute(EXECUTE_CONSTANT_PLACEHOLDER)) // being constants, the only possible true result is the Execute to be equal.
+	}
+
+	if expression.Type != other.Type { // If reached here, the types must be equal.
+		if expression.isIdentityWrapper() {
+			return expression.unwrapIdentity().Equal(other)
+		}
+
+		if other.isIdentityWrapper() {
+			return other.unwrapIdentity().Equal(expression)
+		}
+
+		return false
+	}
+
+	switch expression.Type { // Since types are equal, switch is safe to be applied.
+	case INTEGER, FLOAT: // Constant leafs needs to compare values.
+		if (expression.Value != nil) != (other.Value != nil) { // Check if both are nil or non-nil.
+			return false
+		} else if expression.Value == nil { // Nil values actually mean something have gone wrong, it should not exist. But its not this method's responsibility to treat it, so... they're equal.
+			return true
+		}
+
+		return expression.Value != nil && other.Value != nil && *expression.Value == *other.Value
+
+	case SYMBOL: // Symbolic leafs needs to compare the symbol itself.
+		return expression.Name == other.Name
+
+	case ADDITION, MULTIPLICATION: // Additions and multiplications are commutative, so order of arguments does not matter and should be treated with special care.
+		return expression.commutativeBehavioralEqual(other)
+
+	default: // Any other type, have a strict pattern or arguments, and any ordered difference means completely different things, since previous validations were made.
+		if len(expression.Arguments) != len(other.Arguments) {
+			return false
+		}
+
+		for i := range expression.Arguments {
+			if !expression.Arguments[i].Equal(other.Arguments[i]) {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+/*
+Return a deep copied object of the expression.
+
+The cache of every nested expression is cloned too.
+*/
+func (expression *Expression) Clone() *Expression {
+	if expression == nil {
+		return nil
+	}
+
+	var clone *Expression = &Expression{
+		Type: expression.Type,
+		Name: expression.Name,
+
+		Cache: expression.Cache,
+	}
+
+	if expression.Value != nil {
+		var val float64 = *expression.Value
+		clone.Value = &val
+	}
+
+	if len(expression.Arguments) > 0 {
+		clone.Arguments = make([]*Expression, len(expression.Arguments))
+		for i, branch := range expression.Arguments {
+			clone.Arguments[i] = branch.Clone()
+		}
+	}
+
+	return clone
+}
+
+/*
+Recursively clear the cache of pre-computing operations in the whole
+expression.
+*/
+func (expression *Expression) ClearCache() {
+	expression.Cache.clearCache()
+
+	for _, branch := range expression.Arguments {
+		branch.ClearCache()
+	}
+}
+
+/*
+Addition and multiplication have commutative behavior, and comparisons must be
+extra careful about its content.
+
+This method enforces that both Expression be equal and multiplication or
+addition, then it re-arrange sub-trees, merging and comparing constant
+sub-trees and comparing every variable sub-trees.
+*/
+func (expression *Expression) commutativeBehavioralEqual(other *Expression) bool {
+	if expression.Type != other.Type {
+		return false
+	}
+	if expression.Type != ADDITION && expression.Type != MULTIPLICATION {
+		return false
+	}
+
+	constantExpression, treeExpression := expression.partitionArguments()
+	constantOther, treeOther := other.partitionArguments()
+
+	if !isApproximate(constantExpression, constantOther) {
+		return false
+	}
+	if isApproximate(constantExpression, 0) {
+		constantExpression = 0
+		constantOther = 0
+	} else if isApproximate(constantExpression, 1) {
+		constantExpression = 1
+		constantOther = 1
+	}
+
+	if len(treeExpression) != len(treeOther) {
+		return false
+	}
+
+	var matched []bool = make([]bool, len(treeOther))
+	for _, subTreeExpression := range treeExpression {
+		var found bool
+
+		for j, subTreeOther := range treeOther {
+			if !matched[j] && subTreeExpression.Equal(subTreeOther) {
+				matched[j] = true
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return false
+		}
+	}
+
+	return true
+}
+
+/*
+Simplify the arguments into merging constants together (independent of its
+sub-tree structure) and enforcing only the variables sub-trees to be returned.
+*/
+func (expression *Expression) partitionArguments() (constant float64, trees []*Expression) {
+	if expression.Type == MULTIPLICATION {
+		constant = 1.0
+	} else {
+		constant = 0.0
+	}
+
+	for _, subExpression := range expression.Arguments {
+		if subExpression.IsConstant() {
+			if expression.Type == MULTIPLICATION {
+				constant *= subExpression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+			} else {
+				constant += subExpression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+			}
+
+		} else {
+			trees = append(trees, subExpression)
+		}
+	}
+
+	return constant, trees
+}
+
+/*
+Identify if the expression is a wrapper of irrelevant terms over a variable
+For example:
+
+	x + 0
+	x + 1 - 1
+	x * 1
+	x * 0.5 * 2
+*/
+func (expression *Expression) isIdentityWrapper() bool {
+	if expression.Type != ADDITION && expression.Type != MULTIPLICATION {
+		return false
+	}
+
+	constant, trees := expression.partitionArguments()
+
+	if expression.Type == ADDITION {
+		return len(trees) == 1 && isApproximate(constant, 0)
+	}
+
+	return len(trees) == 1 && isApproximate(constant, 1)
+}
+
+/*
+Helper to get the actual meaningful part of the identity wrapper.
+*/
+func (expression *Expression) unwrapIdentity() *Expression {
+	_, trees := expression.partitionArguments()
+	return trees[0]
 }
