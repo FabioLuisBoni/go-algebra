@@ -42,12 +42,21 @@ const (
 
 // FUNCTION FAMILY
 const (
-	POWER       ExpressionType = "pow"
-	EXPONENTIAL ExpressionType = "exp"
-	LOGARITHMIC ExpressionType = "log"
-	SIN         ExpressionType = "sin"
-	COS         ExpressionType = "cos"
-	TAN         ExpressionType = "tan"
+	POWER                 ExpressionType = "pow"
+	EXPONENTIAL           ExpressionType = "exp"
+	SINE                  ExpressionType = "sin"
+	COSINE                ExpressionType = "cos"
+	TANGENT               ExpressionType = "tan"
+	ARCSINE               ExpressionType = "asin"
+	ARCCOSINE             ExpressionType = "acos"
+	ARCTANGENT            ExpressionType = "atan"
+	HYPERBOLIC_SINE       ExpressionType = "sinh"
+	HYPERBOLIC_COSINE     ExpressionType = "cosh"
+	HYPERBOLIC_TANGENT    ExpressionType = "tanh"
+	HYPERBOLIC_ARCSINE    ExpressionType = "asinh"
+	HYPERBOLIC_ARCCOSINE  ExpressionType = "acosh"
+	HYPERBOLIC_ARCTANGENT ExpressionType = "atanh"
+	LOGARITHMIC           ExpressionType = "log"
 )
 
 func Symbol(name string) *Expression {
@@ -147,7 +156,7 @@ func Log(base *Expression, operation *Expression) *Expression {
 
 func Sin(operation *Expression) *Expression {
 	return &Expression{
-		Type: SIN,
+		Type: SINE,
 
 		Arguments: []*Expression{
 			operation,
@@ -157,7 +166,7 @@ func Sin(operation *Expression) *Expression {
 
 func Cos(operation *Expression) *Expression {
 	return &Expression{
-		Type: COS,
+		Type: COSINE,
 
 		Arguments: []*Expression{
 			operation,
@@ -167,7 +176,7 @@ func Cos(operation *Expression) *Expression {
 
 func Tan(operation *Expression) *Expression {
 	return &Expression{
-		Type: TAN,
+		Type: TANGENT,
 
 		Arguments: []*Expression{
 			operation,
