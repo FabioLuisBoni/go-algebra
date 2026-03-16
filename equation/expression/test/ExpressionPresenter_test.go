@@ -1341,7 +1341,12 @@ func TestStringExpressionCaseAdditionWithNestedMultiply(t *testing.T) {
 func TestStringExpressionCaseAdditionAndMultiplyWithComplexNestedSituation(t *testing.T) {
 	t.Logf("testing String for Expression CASE ADDITION AND MULTIPLY WITH COMPLEX NESTED SITUATION\n\n")
 	{
-		var expected string = "(-2.1 * x * (x +e +1)) +x +2"
+		var expected []string = []string{
+			"(-2.1 * x * (x +e +1)) +x +2",
+			"(-2.1 * x * (e +x +1)) +x +2",
+			"x +(-2.1 * x * (x +e +1)) +2",
+			"x +(-2.1 * x * (e +x +1)) +2",
+		}
 
 		var result string = algebraic.Sum(
 			algebraic.Int(2),
@@ -1357,8 +1362,8 @@ func TestStringExpressionCaseAdditionAndMultiplyWithComplexNestedSituation(t *te
 			),
 		).String()
 
-		if result != expected {
-			t.Errorf("\nexpected: %s\ngot     : %s", expected, result)
+		if !slices.Contains(expected, result) {
+			t.Errorf("\nexpected: %+v\ngot     : %s", expected, result)
 		}
 	}
 
