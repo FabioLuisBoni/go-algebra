@@ -27,106 +27,368 @@ const (
 )
 
 const APPROXIMATION_EPSILON float64 = 1e-9
+const EXECUTE_CONSTANT_PLACEHOLDER float64 = 2
 
+/*
+Evaluates if the Expression object structure is valid for equation representation.
+*/
+func (expression *Expression) IsMalformedStructure() bool {
+	if expression.Cache.isCached(CACHE_IS_MALFORMED_STRUCTURE) {
+		return expression.Cache.result(CACHE_IS_MALFORMED_STRUCTURE)
+	}
+	switch expression.Type {
+	case INTEGER, FLOAT:
+		if expression.Value == nil {
+			return expression.Cache.setMalformedStructure(true)
+		}
+
+	case SYMBOL:
+		if expression.Name == "" {
+			return expression.Cache.setMalformedStructure(true)
+		}
+
+	case ADDITION, MULTIPLICATION:
+		if len(expression.Arguments) < 2 {
+			return expression.Cache.setMalformedStructure(true)
+		}
+
+	case POWER:
+		if len(expression.Arguments) != 2 {
+			return expression.Cache.setMalformedStructure(true)
+		}
+
+	case LOGARITHMIC:
+		if len(expression.Arguments) != 1 && len(expression.Arguments) != 2 {
+			return expression.Cache.setMalformedStructure(true)
+		}
+
+	default:
+		if len(expression.Arguments) != 1 {
+			return expression.Cache.setMalformedStructure(true)
+		}
+	}
+
+	for _, branch := range expression.Arguments {
+		if branch == nil {
+			return expression.Cache.setMalformedStructure(true)
+		}
+
+		if branch.IsMalformedStructure() {
+			return expression.Cache.setMalformedStructure(true)
+		}
+	}
+
+	return expression.Cache.setMalformedStructure(false)
+}
+
+/*
+Evaluates if the whole branch could result in mathematical indefiniteness.
+
+For protection and validation, it is considered indefiniteness if the arguments
+of the expressions are not what the pattern expects.
+*/
+func (expression *Expression) IsIndefiniteness() bool {
+	if expression.Cache.isCached(CACHE_IS_INDEFINITENESS) {
+		return expression.Cache.result(CACHE_IS_INDEFINITENESS)
+	}
+
+	if expression.IsMalformedStructure() {
+		return expression.Cache.setIndefiniteness(true)
+	}
+
+	switch expression.Type {
+	case POWER:
+		/*
+			Power have special case needing to evaluated-compute base and exponent together,
+			since:
+				* 0^negative is mathematical indefiniteness. Represents a division by 0.
+				* 0^0 is mathematical indefiniteness.
+				* negative^fraction results in a complex number.
+		*/
+
+		baseNegative, _ := expression.Arguments[0].IsNegative()
+
+		if expression.Arguments[0].IsZero() && (expression.Arguments[1].IsZero() || baseNegative) {
+			return expression.Cache.setIndefiniteness(true)
+		}
+
+		if baseNegative && expression.Arguments[1].IsFraction() {
+			return expression.Cache.setIndefiniteness(true)
+		}
+
+	case TANGENT:
+		if expression.Arguments[0].isTangentIndefinite() {
+			return expression.Cache.setIndefiniteness(true)
+		}
+
+	case LOGARITHMIC:
+		/*
+			Logarithms have special case needing to evaluated-compute base, since:
+				* Base 1 is mathematical indefiniteness.
+				* Base 0 is mathematical indefiniteness.
+				* Operator 0 is mathematical indefiniteness.
+				* Base negative results in a complex number.
+				* Operator negative results in a complex number.
+		*/
+
+		if expression.Arguments[0].IsZero() {
+			return expression.Cache.setIndefiniteness(true)
+		}
+
+		var baseNegative bool
+		if len(expression.Arguments) == 2 {
+			if expression.Arguments[1].IsZero() || expression.Arguments[1].IsAbsoluteOne() {
+				return expression.Cache.setIndefiniteness(true)
+			}
+
+			baseNegative, _ = expression.Arguments[1].IsNegative()
+		}
+
+		operatorNegative, _ := expression.Arguments[0].IsNegative()
+
+		if baseNegative || operatorNegative {
+			return expression.Cache.setIndefiniteness(true)
+		}
+	}
+
+	for _, branch := range expression.Arguments {
+		if branch.IsIndefiniteness() {
+			return expression.Cache.setIndefiniteness(true)
+		}
+	}
+
+	return expression.Cache.setIndefiniteness(false)
+}
+
+/*
+Evaluate the expression to predict if its only possible result is a constant.
+*/
 func (expression *Expression) IsConstant() bool {
 	if expression.Cache.isCached(CACHE_IS_CONSTANT) {
 		return expression.Cache.result(CACHE_IS_CONSTANT)
 	}
 
+	if expression.IsIndefiniteness() {
+		return expression.Cache.setConstant(false)
+	}
+
 	switch expression.Type {
 	case INTEGER, FLOAT: // last leaf of the branch as a constant
-		return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		return expression.Cache.setConstant(true)
 
 	case SYMBOL: // last leaf of the branch as a symbol
 		switch expression.Name {
 		case SYMBOL_EULER, SYMBOL_PI: // symbol that represents a constant
-			return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+			return expression.Cache.setConstant(true)
 		default: // symbol that represents a variable
-			return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, false)
+			return expression.Cache.setConstant(false)
 		}
 
 	default:
-		if len(expression.Arguments) == 0 { // reached here and have no arguments, should not even exist
-			return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, false)
-		}
-
 		switch expression.Type { // special performance and evaluation cases
 		case MULTIPLICATION:
 			/*
-				It may seem a redundant loop since a similar loop already exists forward in the code, but
-				it is placed here for performance reasons.
-				This Guaranteed that first of all, the IsZero() cases are evaluated first, since any 0
-				render entire multiplication as 0.
-				Otherwise it would unnecessarily compute IsAbsoluteOne() and IsEuler() over potentially complex
-				recursion, since a latter 0 should return true anyway.
+				It may seem a redundant switch since a similar switch already exists forward in
+				the code, but it is placed here for performance reasons.
+				This guarantee that first of all, the IsZero() cases are evaluated first, since
+				any 0 render entire multiplication as 0.
+				Otherwise it would unnecessarily compute IsAbsoluteOne() and IsEuler() over
+				potentially complex recursion, since a latter 0 should return true anyway.
 			*/
 			for _, subExpression := range expression.Arguments {
 				if subExpression.IsZero() {
-					return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+					_ = expression.Cache.setZero(true)
+					return expression.Cache.setConstant(true)
 				}
 			}
 
 		case POWER:
 			/*
-				Power have special case needing to evaluated-compute base and exponent together, since:
-					* 0^0 is mathematical mathematical indefiniteness.
+				Power have special case needing to evaluated-compute base and exponent together,
+				since:
 					* x^0 equals to 1, a constant.
 					* 0^x equals to 0, a constant.
-				So, for performance reasons, this is a potential shortcut to avoid calling unnecessarily
-				IsAbsoluteOne() and IsEuler().
-				Even outside of performance scope, it treats 0^0 case isolated.
+					* 1^x equals to 1, a constant.
+				So, for performance reasons, this is a potential shortcut to avoid calling
+				unnecessarily IsAbsoluteOne() and IsEuler().
 			*/
-			if len(expression.Arguments) != 2 {
-				return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, false)
-			}
 
 			var baseZero bool = expression.Arguments[0].IsZero()
 			var exponentZero bool = expression.Arguments[1].IsZero()
 
-			if baseZero && exponentZero {
-				return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, false)
-			}
-
 			if baseZero || exponentZero {
-				return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+				if baseZero {
+					_ = expression.Cache.setZero(true)
+				} else {
+					_ = expression.Cache.setAbsoluteOne(true)
+					_, _ = expression.Cache.setNegative(false, true)
+				}
+
+				return expression.Cache.setConstant(true)
 			}
 
 			if expression.Arguments[0].IsAbsoluteOne() {
-				return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+				_ = expression.Cache.setAbsoluteOne(true)
+				return expression.Cache.setConstant(true)
+			}
+
+		case LOGARITHMIC:
+			/*
+				Logarithms have special case needing to evaluated-compute base, since:
+					* Base equal to operator, unless hitting indefiniteness, is 1, a constant.
+			*/
+
+			if len(expression.Arguments) == 2 {
+				if expression.Arguments[0].Equal(expression.Arguments[1]) {
+					_ = expression.Cache.setAbsoluteOne(true)
+					_, _ = expression.Cache.setNegative(false, true)
+					return expression.Cache.setConstant(true)
+				}
+
+			} else {
+				if expression.Arguments[0].IsEuler() {
+					_ = expression.Cache.setAbsoluteOne(true)
+					_, _ = expression.Cache.setNegative(false, true)
+					return expression.Cache.setConstant(true)
+				}
 			}
 		}
 
-		for _, subExpression := range expression.Arguments { // scraping for any non-constant
-			switch expression.Type {
-			case INTEGER, FLOAT: // last leaf of the branch as a constant
-				continue
-
-			case SYMBOL: // last leaf of the branch as a symbol
-				switch expression.Name {
-				case SYMBOL_EULER, SYMBOL_PI: // symbol that represents a constant
-					continue
-				default: // symbol that represents a variable
-					return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, false)
-				}
-
-			case MULTIPLICATION, POWER: // IsZero() were already evaluated-computed due special cases
-				if subExpression.IsAbsoluteOne() || subExpression.IsEuler() { // whole nested arguments context, simple constants
-					continue
-				}
-
-			default: // no special cases for any other expression
-				if subExpression.IsZero() || subExpression.IsAbsoluteOne() || subExpression.IsEuler() { // whole nested arguments context, simple constants
-					continue
-				}
-			}
-
-			if !subExpression.IsConstant() { // complex sub-expression that needs recursively check.
-				return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, false)
+		for _, branch := range expression.Arguments { // scraping for any non-constant
+			if !branch.IsConstant() {
+				return expression.Cache.setConstant(false)
 			}
 		}
 
-		return expression.Cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		return expression.Cache.setConstant(true)
 	}
+}
+
+/*
+Evaluate the expression to predict if its only possible result is 0.
+*/
+func (expression *Expression) IsZero() bool {
+	if expression.Cache.isCached(CACHE_IS_ZERO) {
+		return expression.Cache.result(CACHE_IS_ZERO)
+	}
+
+	if expression.IsIndefiniteness() {
+		return expression.Cache.setZero(false)
+	}
+
+	if !expression.IsConstant() {
+		return expression.Cache.setZero(false)
+	}
+
+	return expression.Cache.setZero(isApproximate(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER), 0))
+}
+
+/*
+Evaluate the expression to predict if its only possible result is 1 or -1.
+
+If needed to evaluate a the signal as well, use it with expression.IsNegative().
+*/
+func (expression *Expression) IsAbsoluteOne() bool {
+	if expression.Cache.isCached(CACHE_IS_ABSOLUTE_ONE) {
+		return expression.Cache.result(CACHE_IS_ABSOLUTE_ONE)
+	}
+
+	if expression.IsIndefiniteness() {
+		return expression.Cache.setAbsoluteOne(false)
+	}
+
+	if !expression.IsConstant() {
+		return expression.Cache.setAbsoluteOne(false)
+	}
+
+	return expression.Cache.setAbsoluteOne(isApproximate(math.Abs(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)), 1))
+}
+
+/*
+Evaluate the expression to predict if its only possible result is e (euler's number).
+*/
+func (expression *Expression) IsEuler() bool {
+	if expression.Cache.isCached(CACHE_IS_EULER) {
+		return expression.Cache.result(CACHE_IS_EULER)
+	}
+
+	if expression.IsIndefiniteness() {
+		return expression.Cache.setEuler(false)
+	}
+
+	if !expression.IsConstant() {
+		return expression.Cache.setEuler(false)
+	}
+
+	return expression.Cache.setEuler(isApproximate(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER), math.E))
+}
+
+func (expression *Expression) IsFraction() bool {
+	if expression.Cache.isCached(CACHE_IS_FRACTION) {
+		return expression.Cache.result(CACHE_IS_FRACTION)
+	}
+
+	if !expression.IsConstant() {
+		return expression.Cache.setFraction(false)
+	}
+
+	var value float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var rounded float64 = math.Round(value)
+
+	return expression.Cache.setFraction(!isApproximate(value, rounded))
+}
+
+func (expression *Expression) IsInteger() bool {
+	if expression.Cache.isCached(CACHE_IS_INTEGER) {
+		return expression.Cache.result(CACHE_IS_INTEGER)
+	}
+
+	if !expression.IsConstant() {
+		return expression.Cache.setInteger(false)
+	}
+
+	var value float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var rounded float64 = math.Round(value)
+
+	return expression.Cache.setInteger(isApproximate(value, rounded))
+}
+
+func (expression *Expression) IsEvenInteger() bool {
+	if expression.Cache.isCached(CACHE_IS_EVEN_INTEGER) {
+		return expression.Cache.result(CACHE_IS_EVEN_INTEGER)
+	}
+
+	if !expression.IsConstant() {
+		return expression.Cache.setEvenInteger(false)
+	}
+
+	var value float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var rounded float64 = math.Round(value)
+
+	if !isApproximate(value, rounded) {
+		return expression.Cache.setEvenInteger(false)
+	}
+
+	return expression.Cache.setEvenInteger(int64(math.Abs(rounded))%2 == 0)
+}
+
+func (expression *Expression) IsOddInteger() bool {
+	if expression.Cache.isCached(CACHE_IS_ODD_INTEGER) {
+		return expression.Cache.result(CACHE_IS_ODD_INTEGER)
+	}
+
+	if !expression.IsConstant() {
+		return expression.Cache.setOddInteger(false)
+	}
+
+	var value float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var rounded float64 = math.Round(value)
+
+	if !isApproximate(value, rounded) {
+		return expression.Cache.setOddInteger(false)
+	}
+
+	return expression.Cache.setOddInteger(int64(math.Abs(rounded))%2 != 0)
 }
 
 /*
@@ -154,64 +416,47 @@ func (expression *Expression) IsSignalInvertible() bool {
 		return expression.Cache.result(CACHE_IS_SIGNAL_INVERTIBLE)
 	}
 
+	if expression.IsIndefiniteness() {
+		return expression.Cache.setSignalInvertible(false)
+	}
+
 	switch expression.Type {
 	case INTEGER, FLOAT:
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_SIGNAL_INVERTIBLE,
-			expression.Value != nil && *expression.Value < 0,
-		)
+		return expression.Cache.setSignalInvertible(*expression.Value < 0)
 
 	case ADDITION:
-		if len(expression.Arguments) == 0 {
-			return expression.Cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
-		}
-
 		var total float64
-		for _, subExpression := range expression.Arguments {
-			if !subExpression.IsConstant() {
-				return expression.Cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
+		for _, branch := range expression.Arguments {
+			if !branch.IsConstant() {
+				return expression.Cache.setSignalInvertible(false)
 			}
 
-			total += subExpression.Execute(math.MaxInt)
+			total += branch.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
 		}
 
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_SIGNAL_INVERTIBLE,
-			total < 0,
-		)
+		return expression.Cache.setSignalInvertible(total < 0)
 
 	case MULTIPLICATION:
-		if len(expression.Arguments) == 0 {
-			return expression.Cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
-		}
-
 		var negative bool
-		for _, argument := range expression.Arguments {
-			if argument.IsSignalInvertible() {
+		for _, branch := range expression.Arguments {
+			if branch.IsSignalInvertible() {
 				negative = !negative
 			}
 		}
 
-		return expression.Cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, negative)
+		return expression.Cache.setSignalInvertible(negative)
 
 	case POWER:
-		if len(expression.Arguments) != 2 {
-			return expression.Cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
-		}
-
-		var base *Expression = expression.Arguments[0]
-		var exponent *Expression = expression.Arguments[1]
-
-		if base.IsConstant() && exponent.IsOddInteger() {
-			if base.Execute(math.MaxInt) < 0 {
-				return expression.Cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, true)
+		if expression.Arguments[0].IsConstant() && expression.Arguments[1].IsOddInteger() {
+			if expression.Arguments[0].Execute(EXECUTE_CONSTANT_PLACEHOLDER) < 0 {
+				return expression.Cache.setSignalInvertible(true)
 			}
 		}
 
-		return expression.Cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
+		return expression.Cache.setSignalInvertible(false)
 
 	default:
-		return expression.Cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
+		return expression.Cache.setSignalInvertible(false)
 	}
 }
 
@@ -231,486 +476,37 @@ odd integer exponent.
 Exponential, as e^f(x), have no negative result. Since it is actually a
 sub-case of Power for euler constant as base, it already breaks the needed
 negative base.
+
+If negative returned value is true, applicable will always be true.
+If negative returned value is false, applicable may be true or false.
 */
 func (expression *Expression) IsNegative() (negative bool, applicable bool) {
-	if expression.Cache.isCached(IS_NEGATIVE) {
-		return expression.Cache.result(IS_NEGATIVE), expression.Cache.applicable(IS_NEGATIVE)
+	if expression.Cache.isCached(CACHE_IS_NEGATIVE) {
+		return expression.Cache.result(CACHE_IS_NEGATIVE), expression.Cache.applicable(CACHE_IS_NEGATIVE)
+	}
+
+	if expression.IsIndefiniteness() {
+		return expression.Cache.setNegative(false, false)
 	}
 
 	if expression.Type == EXPONENTIAL {
-		if len(expression.Arguments) != 1 {
-			return expression.Cache.setRanResultApplicableTrio(IS_NEGATIVE, false, false)
-		}
-
-		return expression.Cache.setRanResultApplicableTrio(IS_NEGATIVE, false, true)
+		return expression.Cache.setNegative(false, true)
 	}
 
 	if !expression.IsConstant() {
-		return expression.Cache.setRanResultApplicableTrio(IS_NEGATIVE, false, false)
+		return expression.Cache.setNegative(false, false)
 	}
 
-	var result float64 = expression.Execute(math.MaxInt)
+	var result float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
 	if isApproximate(result, 0) {
 		result = 0
 	}
 
-	return expression.Cache.setRanResultApplicableTrio(
-		IS_NEGATIVE,
-		result < 0,
-		true,
-	)
+	return expression.Cache.setNegative(result < 0, true)
 }
 
-func (expression *Expression) IsEvenInteger() bool {
-	if expression.Cache.isCached(CACHE_IS_EVEN_INTEGER) {
-		return expression.Cache.result(CACHE_IS_EVEN_INTEGER)
-	}
-
-	if !expression.IsConstant() {
-		return expression.Cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
-	}
-
-	var value float64 = expression.Execute(math.MaxInt)
-	var rounded float64 = math.Round(value)
-
-	if !isApproximate(value, rounded) {
-		return expression.Cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
-	}
-
-	return expression.Cache.setRanResultPair(
-		CACHE_IS_EVEN_INTEGER,
-		int64(math.Abs(rounded))%2 == 0,
-	)
-}
-
-func (expression *Expression) IsOddInteger() bool {
-	if expression.Cache.isCached(CACHE_IS_ODD_INTEGER) {
-		return expression.Cache.result(CACHE_IS_ODD_INTEGER)
-	}
-
-	if !expression.IsConstant() {
-		return expression.Cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
-	}
-
-	var value float64 = expression.Execute(math.MaxInt)
-	var rounded float64 = math.Round(value)
-
-	if !isApproximate(value, rounded) {
-		return expression.Cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
-	}
-
-	return expression.Cache.setRanResultPair(
-		CACHE_IS_ODD_INTEGER,
-		int64(math.Abs(rounded))%2 != 0,
-	)
-}
-
-/*
-Evaluate the expression to predict if its only possible result is 1 or -1.
-If needed to evaluate a the signal as well, use it with expression.IsNegative().
-
-Integer and Float just compare its absolute value standard approximation to 1.
-
-Symbol is not applicable and always returns false.
-
-Addition tries to decompose all sub-expressions into known values, then compare
-the absolute result standard approximation to 1.
-
-Multiplication checks if the only underlying value is 1, since only 1*1 equals
-to 1 in multiplication cases.
-
-Power and Exponential evaluates if 1^x, or 0^x when x != 0, the only possible
-constant combinations with no mathematical indefiniteness.
-
-Trigonometric functions check its periodic result if argument is a constant.
-
-Logarithmic functions check is the argument is equal to its base.
-*/
-func (expression *Expression) IsAbsoluteOne() bool {
-	if expression.Cache.isCached(CACHE_IS_ABSOLUTE_ONE) {
-		return expression.Cache.result(CACHE_IS_ABSOLUTE_ONE)
-	}
-
-	if !expression.IsConstant() {
-		return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-	}
-
-	switch expression.Type {
-	case INTEGER, FLOAT:
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ABSOLUTE_ONE,
-			expression.Value != nil && isApproximate(math.Abs(*expression.Value), 1),
-		)
-
-	case ADDITION:
-		if len(expression.Arguments) == 0 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-		var total float64
-		for _, subExpression := range expression.Arguments {
-			total += subExpression.Execute(math.MaxInt)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ABSOLUTE_ONE,
-			isApproximate(math.Abs(total), 1),
-		)
-
-	case MULTIPLICATION:
-		if len(expression.Arguments) == 0 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-		if expression.IsZero() {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-		var total float64 = 1
-		for _, subExpression := range expression.Arguments {
-			if subExpression.IsAbsoluteOne() {
-				continue
-			}
-
-			total *= subExpression.Execute(math.MaxInt)
-		}
-
-		return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, true)
-
-	case POWER:
-		if len(expression.Arguments) != 2 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-		var base *Expression = expression.Arguments[0]
-		var exponent *Expression = expression.Arguments[1]
-
-		if base.IsAbsoluteOne() {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, true)
-		}
-
-		if exponent.IsZero() && !base.IsZero() {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, true)
-		}
-
-		return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-
-	case EXPONENTIAL:
-		if len(expression.Arguments) != 1 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-		if expression.Arguments[0].IsZero() {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, true)
-		}
-
-		return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-
-	case SIN:
-		if len(expression.Arguments) != 1 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ABSOLUTE_ONE,
-			expression.Arguments[0].isSinOne(),
-		)
-
-	case COS:
-		if len(expression.Arguments) != 1 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ABSOLUTE_ONE,
-			expression.Arguments[0].isCosineOne(),
-		)
-
-	case TAN:
-		if len(expression.Arguments) != 1 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ABSOLUTE_ONE,
-			expression.Arguments[0].isTangentOne(),
-		)
-
-	case LOGARITHMIC:
-		switch len(expression.Arguments) {
-		case 1:
-			return expression.Cache.setRanResultPair(
-				CACHE_IS_ABSOLUTE_ONE,
-				expression.Arguments[0].IsEuler(),
-			)
-
-		case 2:
-			if expression.Arguments[0].IsEuler() && expression.Arguments[1].IsEuler() {
-				return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, true)
-			}
-
-			/*
-				Any log that has its own base as x will result in 1.
-				This means that any log may return 1 in a known constant, like log[10](10).
-				But to this work in this recursive structure, a DeepEqual() method must be
-					implemented to compare its base (expression.Arguments[1]) with the argument
-					(expression.Arguments[0]).
-				Basically, any log will be always equal to 1 if:
-					* expression.Arguments[1].DeepEqual(expression.Arguments[0]) == true
-			*/
-
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-
-		default:
-			return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		}
-
-	default:
-		return expression.Cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-	}
-}
-
-/*
-Evaluate the expression to predict if its only possible result is 0.
-*/
-func (expression *Expression) IsZero() bool {
-	if expression.Cache.isCached(CACHE_IS_ZERO) {
-		return expression.Cache.result(CACHE_IS_ZERO)
-	}
-
-	if !expression.IsConstant() {
-		return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-	}
-
-	switch expression.Type {
-	case INTEGER, FLOAT:
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ZERO,
-			expression.Value != nil && isApproximate(*expression.Value, 0),
-		)
-
-	case ADDITION:
-		if len(expression.Arguments) == 0 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-		}
-
-		var total float64
-		for _, subExpression := range expression.Arguments {
-			total += subExpression.Execute(math.MaxInt)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ZERO,
-			isApproximate(total, 0),
-		)
-
-	case MULTIPLICATION:
-		if len(expression.Arguments) == 0 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-		}
-
-		for _, subExpression := range expression.Arguments {
-			if subExpression.IsZero() {
-				return expression.Cache.setRanResultPair(CACHE_IS_ZERO, true)
-			}
-		}
-
-		return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-
-	case POWER:
-		if len(expression.Arguments) != 2 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-		}
-
-		var base *Expression = expression.Arguments[0]
-		var exponent *Expression = expression.Arguments[1]
-
-		if base.IsZero() && !exponent.IsAbsoluteOne() {
-			return expression.Cache.setRanResultPair(CACHE_IS_ZERO, true)
-		}
-
-		return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-
-	case SIN:
-		if len(expression.Arguments) != 1 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ZERO,
-			expression.Arguments[0].isSinZero(),
-		)
-
-	case COS:
-		if len(expression.Arguments) != 1 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ZERO,
-			expression.Arguments[0].isCosineZero(),
-		)
-
-	case TAN:
-		if len(expression.Arguments) != 1 {
-			return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_ZERO,
-			expression.Arguments[0].isTangentZero(),
-		)
-
-	case LOGARITHMIC:
-		switch len(expression.Arguments) {
-		case 1, 2:
-			return expression.Cache.setRanResultPair(
-				CACHE_IS_ZERO,
-				expression.Arguments[0].IsAbsoluteOne(),
-			)
-		default:
-			return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-		}
-
-	default:
-		return expression.Cache.setRanResultPair(CACHE_IS_ZERO, false)
-	}
-}
-
-/*
-Evaluate the expression to predict if its only possible result is e (euler number).
-*/
-func (expression *Expression) IsEuler() bool {
-	if expression.Cache.isCached(CACHE_IS_EULER) {
-		return expression.Cache.result(CACHE_IS_EULER)
-	}
-
-	if !expression.IsConstant() {
-		return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-	}
-
-	switch expression.Type {
-	case SYMBOL:
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_EULER,
-			expression.Name == SYMBOL_EULER,
-		)
-
-	case FLOAT:
-		if expression.Value == nil {
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_EULER,
-			isApproximate(*expression.Value, math.E),
-		)
-
-	case ADDITION:
-		if len(expression.Arguments) == 0 {
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-		}
-
-		var total float64
-		for _, subExpression := range expression.Arguments {
-			total += subExpression.Execute(math.MaxInt)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_EULER,
-			isApproximate(total, math.E),
-		)
-
-	case MULTIPLICATION:
-		if len(expression.Arguments) == 0 {
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-		}
-
-		var total float64
-		for _, subExpression := range expression.Arguments {
-			total *= subExpression.Execute(math.MaxInt)
-		}
-
-		return expression.Cache.setRanResultPair(
-			CACHE_IS_EULER,
-			isApproximate(total, math.E),
-		)
-
-	case POWER:
-		if len(expression.Arguments) != 2 {
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-		}
-
-		var base *Expression = expression.Arguments[0]
-		var exponent *Expression = expression.Arguments[1]
-
-		if !base.IsEuler() {
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-		}
-
-		if !exponent.IsAbsoluteOne() {
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-		}
-
-		return expression.Cache.setRanResultPair(CACHE_IS_EULER, true)
-
-	case LOGARITHMIC:
-		switch len(expression.Arguments) {
-		case 1:
-			var subExpression *Expression = expression.Arguments[0]
-
-			if subExpression.Type != POWER && len(subExpression.Arguments) != 2 {
-				return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-			}
-
-			var baseExpression *Expression = subExpression.Arguments[0]
-			var exponentExpression *Expression = subExpression.Arguments[1]
-
-			if baseExpression.IsEuler() && exponentExpression.IsEuler() {
-				return expression.Cache.setRanResultPair(CACHE_IS_EULER, true)
-			}
-
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, true)
-
-		case 2:
-			if !expression.Arguments[1].IsEuler() {
-				return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-			}
-
-			if expression.Arguments[0].Type != POWER && len(expression.Arguments[0].Arguments) != 2 {
-				return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-			}
-
-			var baseExpression *Expression = expression.Arguments[0].Arguments[0]
-			var exponentExpression *Expression = expression.Arguments[0].Arguments[1]
-
-			if baseExpression.IsEuler() && exponentExpression.IsEuler() {
-				return expression.Cache.setRanResultPair(CACHE_IS_EULER, true)
-			}
-
-			/*
-				Any log that has its own base elevated to x power will result in x.
-				This means that any log may return e in a known constant, like log[10](10^e).
-				But to this work in this recursive structure, a DeepEqual() method should be
-					implemented to compare its base (expression.Arguments[1]) with the nested
-					power base (expression.Arguments[0].Arguments[0]).
-				Basically, any log will be always equal to euler if both:
-					* expression.Arguments[1].DeepEqual(expression.Arguments[0].Arguments[0]) == true
-					* expression.Arguments[0].Arguments[1].IsEuler() == true
-			*/
-
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-
-		default:
-			return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-		}
-
-	default:
-		return expression.Cache.setRanResultPair(CACHE_IS_EULER, false)
-	}
-}
-
-func (expression *Expression) isSinZero() bool {
+//nolint:unused
+func (expression *Expression) isSineZero() bool {
 	multiplier, found := piMultiplier(expression)
 	if !found {
 		return false
@@ -719,7 +515,8 @@ func (expression *Expression) isSinZero() bool {
 	return periodicMatch(multiplier*math.Pi, 0, 2*math.Pi)
 }
 
-func (expression *Expression) isSinOne() bool {
+//nolint:unused
+func (expression *Expression) isSineOne() bool {
 	multiplier, found := piMultiplier(expression)
 	if !found {
 		return false
@@ -728,6 +525,7 @@ func (expression *Expression) isSinOne() bool {
 	return periodicMatch(multiplier*math.Pi, math.Pi/2, math.Pi)
 }
 
+//nolint:unused
 func (expression *Expression) isCosineZero() bool {
 	multiplier, found := piMultiplier(expression)
 	if !found {
@@ -737,6 +535,7 @@ func (expression *Expression) isCosineZero() bool {
 	return periodicMatch(multiplier*math.Pi, math.Pi/2, 2*math.Pi)
 }
 
+//nolint:unused
 func (expression *Expression) isCosineOne() bool {
 	multiplier, found := piMultiplier(expression)
 	if !found {
@@ -746,6 +545,7 @@ func (expression *Expression) isCosineOne() bool {
 	return periodicMatch(multiplier*math.Pi, 0, math.Pi)
 }
 
+//nolint:unused
 func (expression *Expression) isTangentZero() bool {
 	multiplier, found := piMultiplier(expression)
 	if !found {
@@ -755,6 +555,7 @@ func (expression *Expression) isTangentZero() bool {
 	return periodicMatch(multiplier*math.Pi, 0, 2*math.Pi)
 }
 
+//nolint:unused
 func (expression *Expression) isTangentOne() bool {
 	multiplier, found := piMultiplier(expression)
 	if !found {
@@ -762,6 +563,15 @@ func (expression *Expression) isTangentOne() bool {
 	}
 
 	return periodicMatch(multiplier*math.Pi, math.Pi/4, math.Pi)
+}
+
+func (expression *Expression) isTangentIndefinite() bool {
+	multiplier, found := piMultiplier(expression)
+	if !found {
+		return false
+	}
+
+	return math.Mod(multiplier-0.5, 1.0) == 0
 }
 
 func piMultiplier(expression *Expression) (value float64, applicable bool) {
@@ -781,7 +591,7 @@ func piMultiplier(expression *Expression) (value float64, applicable bool) {
 			return 0, false
 		}
 
-		return expression.Execute(math.MaxInt) / math.Pi, true
+		return expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER) / math.Pi, true
 	}
 }
 
