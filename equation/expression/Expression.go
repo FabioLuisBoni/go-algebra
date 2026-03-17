@@ -31,25 +31,6 @@ type Expression struct {
 	Cache ExpressionCache `json:"-"`
 }
 
-/*
-Presents a simplified, human readable and GeoGebra friendly algebraic notation
-formatted string.
-
-The division '/' and root '√' will be completely omitted due to the
-complexities and heavy computation for a reliable representation.
-
-Instead, keep in mind that:
-  - Negative exponents represents inverse values.
-  - Fraction (float64) exponents are roots.
-  - Divisions are multiplication by inverse values.
-  - x^(-1.5) is analog to 1/√(x^3)
-  - x^(-1.3478) is analog to something like 1/√(x^6739, 5000), and the reason
-    to avoid this notation, not readable and breaks GeoGebra friendly policy.
-*/
-func (expression *Expression) String() string {
-	return algebraicString(expression)
-}
-
 func (expression *Expression) Sum(addition *Expression, others ...*Expression) *Expression {
 	var additions []*Expression = append([]*Expression{addition}, others...)
 
@@ -178,7 +159,7 @@ func (expression *Expression) Divide(denominator *Expression, others ...*Express
 	return expression.Multiply(divisors[0], divisors[1:]...)
 }
 
-func (expression *Expression) Execute(operator float64) (result float64) {
+func (expression *Expression) Solve(operator float64) (result float64) {
 	if expression == nil {
 		return math.NaN()
 	}
@@ -204,49 +185,49 @@ func (expression *Expression) Execute(operator float64) (result float64) {
 			For compatibility with further dimensions, the expression parameter should be a slice of
 				a structure linking a float value with a variable name (or expression name in the
 				library	context)
-			Some extra validations must happen before calling expression.Execute() due to the
-				possibility of missing operators, since Execute() itself is not aware of what
-				happen in its child or parent Execute() calling.
+			Some extra validations must happen before calling expression.Solve() due to the
+				possibility of missing operators, since Solve() itself is not aware of what
+				happen in its child or parent Solve() calling.
 		*/
 		return operator
 
 	case ADDITION:
 		for _, branch := range expression.Arguments {
-			result += branch.Execute(operator)
+			result += branch.Solve(operator)
 		}
 		return result
 
 	case MULTIPLICATION:
 		result = 1
 		for _, branch := range expression.Arguments {
-			result *= branch.Execute(operator)
+			result *= branch.Solve(operator)
 		}
 		return result
 
 	case POWER:
 		return math.Pow(
-			expression.Arguments[0].Execute(operator),
-			expression.Arguments[1].Execute(operator),
+			expression.Arguments[0].Solve(operator),
+			expression.Arguments[1].Solve(operator),
 		)
 
 	case EXPONENTIAL:
-		return math.Exp(expression.Arguments[0].Execute(operator))
+		return math.Exp(expression.Arguments[0].Solve(operator))
 
 	case SINE:
-		return math.Sin(expression.Arguments[0].Execute(operator))
+		return math.Sin(expression.Arguments[0].Solve(operator))
 
 	case COSINE:
-		return math.Cos(expression.Arguments[0].Execute(operator))
+		return math.Cos(expression.Arguments[0].Solve(operator))
 
 	case TANGENT:
-		return math.Tan(expression.Arguments[0].Execute(operator))
+		return math.Tan(expression.Arguments[0].Solve(operator))
 
 	case LOGARITHMIC:
 		if len(expression.Arguments) == 1 {
-			return math.Log(expression.Arguments[0].Execute(operator))
+			return math.Log(expression.Arguments[0].Solve(operator))
 
 		} else {
-			return math.Log(expression.Arguments[0].Execute(operator)) / math.Log(expression.Arguments[1].Execute(operator))
+			return math.Log(expression.Arguments[0].Solve(operator)) / math.Log(expression.Arguments[1].Solve(operator))
 		}
 
 	default:
@@ -270,7 +251,7 @@ func (expression *Expression) Equal(other *Expression) bool {
 	}
 
 	if expression.IsConstant() && other.IsConstant() { // Cover all format that leads to same results, like x^0 == cos(0).
-		return isApproximate(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER), other.Execute(EXECUTE_CONSTANT_PLACEHOLDER)) // being constants, the only possible true result is the Execute to be equal.
+		return isApproximate(expression.Solve(SOLVE_CONSTANT_PLACEHOLDER), other.Solve(SOLVE_CONSTANT_PLACEHOLDER)) // being constants, the only possible true result is the Solve to be equal.
 	}
 
 	if expression.Type != other.Type { // If reached here, the types must be equal.
@@ -361,6 +342,25 @@ func (expression *Expression) ClearCache() {
 }
 
 /*
+Presents a simplified, human readable and GeoGebra friendly algebraic notation
+formatted string.
+
+The division '/' and root '√' will be completely omitted due to the
+complexities and heavy computation for a reliable representation.
+
+Instead, keep in mind that:
+  - Negative exponents represents inverse values.
+  - Fraction (float64) exponents are roots.
+  - Divisions are multiplication by inverse values.
+  - x^(-1.5) is analog to 1/√(x^3)
+  - x^(-1.3478) is analog to something like 1/√(x^6739, 5000), and the reason
+    to avoid this notation, not readable and breaks GeoGebra friendly policy.
+*/
+func (expression *Expression) String() string {
+	return algebraicString(expression)
+}
+
+/*
 Addition and multiplication have commutative behavior, and comparisons must be
 extra careful about its content.
 
@@ -421,9 +421,9 @@ func (expression *Expression) partitionArguments() (constant float64, trees []*E
 	for _, subExpression := range expression.Arguments {
 		if subExpression.IsConstant() {
 			if expression.Type == MULTIPLICATION {
-				constant *= subExpression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+				constant *= subExpression.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 			} else {
-				constant += subExpression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+				constant += subExpression.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 			}
 
 		} else {

@@ -154,19 +154,19 @@ As a malformed expression, any operation is false, since it has no mathematical 
 */
 func (cache *ExpressionCache) setMalformedStructure(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, false)
-		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
-		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, false)
+		cache.setRanResultPair(CACHE_IS_ZERO, false)
+		cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
 
-		_, _ = cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, false)
+		cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, false)
 
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, true)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, true)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, result)
@@ -177,17 +177,17 @@ As a indefiniteness, any operation is false, since it has no mathematical meanin
 */
 func (cache *ExpressionCache) setIndefiniteness(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, false)
-		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
-		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, false)
+		cache.setRanResultPair(CACHE_IS_ZERO, false)
+		cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, false)
 
-		_, _ = cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, false)
+		cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, false)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_INDEFINITENESS, result)
@@ -195,15 +195,15 @@ func (cache *ExpressionCache) setIndefiniteness(result bool) bool {
 
 func (cache *ExpressionCache) setConstant(result bool) bool {
 	if !result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
-		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_ZERO, false)
+		cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_CONSTANT, result)
@@ -211,18 +211,18 @@ func (cache *ExpressionCache) setConstant(result bool) bool {
 
 func (cache *ExpressionCache) setZero(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
-		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
 
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, true)
-		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, true)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		cache.setRanResultPair(CACHE_IS_INTEGER, true)
+		cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, true)
 
-		_, _ = cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, true)
+		cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, true)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_ZERO, result)
@@ -230,16 +230,16 @@ func (cache *ExpressionCache) setZero(result bool) bool {
 
 func (cache *ExpressionCache) setAbsoluteOne(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
-		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_ZERO, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
 
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, true)
-		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, true)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		cache.setRanResultPair(CACHE_IS_INTEGER, true)
+		cache.setRanResultPair(CACHE_IS_ODD_INTEGER, true)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, result)
@@ -247,18 +247,18 @@ func (cache *ExpressionCache) setAbsoluteOne(result bool) bool {
 
 func (cache *ExpressionCache) setEuler(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
-		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_ZERO, false)
+		cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
 
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, true)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		cache.setRanResultPair(CACHE_IS_FRACTION, true)
 
-		_, _ = cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, true)
+		cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, false, true)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_EULER, result)
@@ -266,15 +266,15 @@ func (cache *ExpressionCache) setEuler(result bool) bool {
 
 func (cache *ExpressionCache) setFraction(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
-		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
-		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_ZERO, false)
+		cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		cache.setRanResultPair(CACHE_IS_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
 
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, true)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_FRACTION, result)
@@ -282,12 +282,12 @@ func (cache *ExpressionCache) setFraction(result bool) bool {
 
 func (cache *ExpressionCache) setInteger(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_FRACTION, false)
 
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, true)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_INTEGER, result)
@@ -295,15 +295,15 @@ func (cache *ExpressionCache) setInteger(result bool) bool {
 
 func (cache *ExpressionCache) setEvenInteger(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
-		_ = cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_ABSOLUTE_ONE, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		cache.setRanResultPair(CACHE_IS_ODD_INTEGER, false)
 
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, true)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		cache.setRanResultPair(CACHE_IS_INTEGER, true)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, result)
@@ -311,15 +311,15 @@ func (cache *ExpressionCache) setEvenInteger(result bool) bool {
 
 func (cache *ExpressionCache) setOddInteger(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_ZERO, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
-		_ = cache.setRanResultPair(CACHE_IS_FRACTION, false)
-		_ = cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_ZERO, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_FRACTION, false)
+		cache.setRanResultPair(CACHE_IS_EVEN_INTEGER, false)
 
-		_ = cache.setRanResultPair(CACHE_IS_CONSTANT, true)
-		_ = cache.setRanResultPair(CACHE_IS_INTEGER, true)
+		cache.setRanResultPair(CACHE_IS_CONSTANT, true)
+		cache.setRanResultPair(CACHE_IS_INTEGER, true)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_ODD_INTEGER, result)
@@ -327,9 +327,9 @@ func (cache *ExpressionCache) setOddInteger(result bool) bool {
 
 func (cache *ExpressionCache) setSignalInvertible(result bool) bool {
 	if result {
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
 	}
 
 	return cache.setRanResultPair(CACHE_IS_SIGNAL_INVERTIBLE, result)
@@ -339,9 +339,9 @@ func (cache *ExpressionCache) setNegative(result bool, applicable bool) (bool, b
 	if result {
 		applicable = true
 
-		_ = cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
-		_ = cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
-		_ = cache.setRanResultPair(CACHE_IS_EULER, false)
+		cache.setRanResultPair(CACHE_IS_MALFORMED_STRUCTURE, false)
+		cache.setRanResultPair(CACHE_IS_INDEFINITENESS, false)
+		cache.setRanResultPair(CACHE_IS_EULER, false)
 	}
 
 	return cache.setRanResultApplicableTrio(CACHE_IS_NEGATIVE, result, applicable)

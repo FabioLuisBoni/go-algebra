@@ -88,7 +88,7 @@
 
 > # **Multi-Service Communication**
 > ## **Json**
-> > As explained at **[Abstract Syntax Tree](#abstract-syntax-tree)** topic, the internal structure of Expressions is an **[AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree)**, and its main advantage is a easy way to communicate equations around.
+> > As explained at **[Abstract Syntax Tree](#abstract-syntax-tree)** sub-topic, the internal structure of Expressions is an **[AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree)**, and its main advantage is a easy way to communicate equations around.
 > > 
 > > The Expression recursive behavior have a strict pattern already wrapped in json keys, so for a golang-golang service communication the `json.Marshal()` and `json.Unmarshal()` actually solves everything.
 > > 
@@ -195,12 +195,12 @@
 > >     ]
 > > }
 > > ```
-> > The algebraic notation of this same Expression object is expressed at **[String](#string)** sub-topic.
+> > The algebraic notation of this same `Expression` object is expressed at **[String](#string)** sub-topic.
 >
 > > ## **String**
-> > **go-algebra** prepares Expression and Equation to be used as `fmt.Printf("%s")` formatter, since a `String()` method is prepared for its pointer.
+> > **go-algebra** prepares `Expression` and `Equation` to implement `fmt.Stringer` interface.
 > >
-> > Even though `String()` is kind of heavy to process due to simplification and pre-processing, it runs only once due to caching of the result by branch, so even a further `Simplify()` calling would preserve cache over unchanged branches.
+> > Even though `.String()` is kind of heavy to process due to simplification and pre-processing, it runs only once due to caching of the result by branch, so even a further `.Simplify()` calling would preserve cache over unchanged branches.
 > > 
 > > The string will be the most simplified version of your equation in the algebraic language.
 > > 
@@ -209,7 +209,7 @@
 > > Following a example of the string:
 > > ```
 > > Equation:   f(x) = 1.1(x +1) +sin(x^(-1)) +cos(x) +tan(x) +e^x +ln(x) +log(10, x) +2
-> > Expression: 1.1(x +1) +sin(x^(-1)) +cos(x) +tan(x) +e^x +ln(x) +log(10, x) +2
+> > Expression:        1.1(x +1) +sin(x^(-1)) +cos(x) +tan(x) +e^x +ln(x) +log(10, x) +2
 > > ```
 > > Equation differs so you can declare its signature. Other than that, is just a wrapper for Expression.
 > >
@@ -238,86 +238,106 @@
 > **go-algebra** opens some methods for you to work with:
 > > ## **Equation Component**
 > > > ### **Constructor Methods**
-> > > * `algebra_equation.NewEquation`
+> > > * **`algebra_equation.NewEquation`**
 > > >     - Creates a brand new `Equation` object.
 > > >     - Receives a `string`, representing its signature, as parameter.
-> > > * `.SetExpression`
+> > > * **`.SetExpression`**
 > > >     - Takes the given pointer into the equation, so it behaves exactly as the given `Expression`.
 > > >     - Returns the "self", for easiness of construction.
+> > > * **`.Sum`**
+> > >     - Add `Expression` objects to the `Equation` as sum operators.
+> > >     - Receives multiple `Expression` objects as parameters.
+> > >     - Memory safe, it deep copies `Expression` objects.
+> > >     - Make any preparation or reorganization needed.
+> > > * **`.Subtract`**
+> > >     - Add `Expression` objects to the original `Expression` as subtraction operators.
+> > >     - Receives multiple `Expression` objects as parameters.
+> > >     - Memory safe, it deep copies `Expression` objects.
+> > >     - Make any preparation or reorganization needed.
+> > > * **`.Multiply`**
+> > >     - Add `Expression` objects to the original `Expression` as multiplication operators.
+> > >     - Receives multiple `Expression` objects as parameters.
+> > >     - Memory safe, it deep copies `Expression` objects.
+> > >     - Make any preparation or reorganization needed.
+> > > * **`.Divide`**
+> > >     - Add `Expression` objects to the original `Expression` as division operators.
+> > >     - Receives multiple `Expression` objects as parameters.
+> > >     - Memory safe, it deep copies `Expression` objects.
+> > >     - Make any preparation or reorganization needed.
 > > 
 > > > ### **Action Methods**
-> > > * `.Evaluate`
+> > > * **`.Solve`**
 > > >     - Computes the result of the `Expression` it holds.
 > > >     - Receives a `float64`, representing the variable value, as parameter.
-> > > * `.String`
+> > > * **`.String`**
 > > >     - Produces a simplified, algebraic friendly and **[GeoGebra](https://www.geogebra.org/graphing)** compatible string.
-> > >     - Compatible with `fmt.Printf("%s")` callings.
+> > >     - Implements the `fmt.Stringer` interface for seamless integration with print functions.
 >
 > > ## **Expression Component**
 > > > ### **Constructor Methods**
 > > > * **`algebra_expression.Int`**
-> > >     - Creates a brand new `Expression` object that behaves like a integer constant.
+> > >     - Creates a brand new `Expression` object to behave like a integer constant.
 > > >     - Receives a `int` as parameter.
 > > > * **`algebra_expression.Float`**
-> > >     - Creates a brand new `Expression` object that behaves like a floating point constant.
+> > >     - Creates a brand new `Expression` object to behave like a floating point constant.
 > > >     - Receives a `float64` as parameter.
 > > > * **`algebra_expression.Symbol`**
-> > >     - Creates a brand new `Expression` object that behaves like a symbol.
+> > >     - Creates a brand new `Expression` object to behave like a symbol.
 > > >     - A symbol may be both, a variable, or a known constant.
 > > >     - List of known constants:
 > > >         - `e` for **[Euler's number](https://en.wikipedia.org/wiki/E_(mathematical_constant))** (`~2.718281828`).
 > > >         - `pi` for **[π](https://pt.wikipedia.org/wiki/Pi)** (`~3.141592654`)
 > > >     - Receives a `string` as parameter.
 > > > * **`algebra_expression.Sum`**
-> > >     - Creates a brand new `Expression` object that behaves like a sum of two or more `Expression` objects.
+> > >     - Creates a brand new `Expression` object to behave like a sum of two or more `Expression` objects.
 > > >     - Receives multiple `Expression` objects as parameters.
 > > > * **`algebra_expression.Multiply`**
-> > >     - Creates a brand new `Expression` object that behaves like a multiplication of two or more `Expression` objects.
+> > >     - Creates a brand new `Expression` object to behave like a multiplication of two or more `Expression` objects.
 > > >     - Receives multiple `Expression` objects as parameters.
 > > > * **`algebra_expression.Pow`**
-> > >     - Creates a brand new `Expression` object that behaves like a power of two `Expression` objects.
+> > >     - Creates a brand new `Expression` object to behave like a power of two `Expression` objects.
 > > >     - Receives two `Expression` objects as parameters:
 > > >         - First parameter is the base of the power.
 > > >         - Second parameter is the exponent of the power.
 > > > * **`algebra_expression.Sin`**
-> > >     - Creates a brand new `Expression` object that behaves like a sin of an `Expression` object.
+> > >     - Creates a brand new `Expression` object to behave like a sin of an `Expression` object.
 > > >     - Receives a single `Expression` object as parameter
 > > > * **`algebra_expression.Cos`**
-> > >     - Creates a brand new `Expression` object that behaves like a cosine of an `Expression` object.
+> > >     - Creates a brand new `Expression` object to behave like a cosine of an `Expression` object.
 > > >     - Receives a single `Expression` object as parameter
 > > > * **`algebra_expression.Tan`**
-> > >     - Creates a brand new `Expression` object that behaves like a tangent of an `Expression` object.
+> > >     - Creates a brand new `Expression` object to behave like a tangent of an `Expression` object.
 > > >     - Receives a single `Expression` object as parameter
 > > > * **`algebra_expression.Exp`**
-> > >     - Creates a brand new `Expression` object that behaves like a natural exponential by an `Expression` object.
+> > >     - Creates a brand new `Expression` object to behave like a natural exponential by an `Expression` object.
 > > >     - Receives a single `Expression` object as parameter
 > > > * **`algebra_expression.Log`**
-> > >     - Creates a brand new `Expression` object that behaves like a logarithm of `Expression` objects.
+> > >     - Creates a brand new `Expression` object to behave like a logarithm of `Expression` objects.
 > > >     - Receives two `Expression` objects as parameters:
 > > >         - First parameter is the base of the logarithm.
 > > >         - Second parameter is the operand of the logarithm.
 > > > * **`algebra_expression.Ln`**
-> > >     - Creates a brand new `Expression` object that behaves like a natural logarithm of an `Expression` object.
+> > >     - Creates a brand new `Expression` object to behave like a natural logarithm of an `Expression` object.
 > > >     - Receives a single `Expression` object as parameter
 > > > * **`.Sum`**
 > > >     - Add `Expression` objects to the original `Expression` as sum operators.
 > > >     - Receives multiple `Expression` objects as parameters.
-> > >     - Make any preparation or reorganization that the original `Expression` object needs.
+> > >     - Make any preparation or reorganization needed.
 > > > * **`.Subtract`**
 > > >     - Add `Expression` objects to the original `Expression` as subtraction operators.
 > > >     - Receives multiple `Expression` objects as parameters.
-> > >     - Make any preparation or reorganization that the original `Expression` object needs.
+> > >     - Make any preparation or reorganization needed.
 > > > * **`.Multiply`**
 > > >     - Add `Expression` objects to the original `Expression` as multiplication operators.
 > > >     - Receives multiple `Expression` objects as parameters.
-> > >     - Make any preparation or reorganization that the original `Expression` object needs.
+> > >     - Make any preparation or reorganization needed.
 > > > * **`.Divide`**
 > > >     - Add `Expression` objects to the original `Expression` as division operators.
 > > >     - Receives multiple `Expression` objects as parameters.
-> > >     - Make any preparation or reorganization that the original `Expression` object needs.
+> > >     - Make any preparation or reorganization needed.
 > > 
 > > > ### **Action Methods**
-> > > * **`.Execute`**
+> > > * **`.Solve`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Receives a `float64`, representing the variable value, as parameter.
 > > > * **`.Equal`**
@@ -336,49 +356,49 @@
 > > >   - Works recursively, calling in all underlying branches.
 > > > * **`.String`**
 > > >     - Produces a simplified, algebraic friendly and **[GeoGebra](https://www.geogebra.org/graphing)** compatible string.
-> > >     - Compatible with `fmt.Printf("%s")` callings.
+> > >     - Implements the `fmt.Stringer` interface for seamless integration with print functions.
 > > >     - Result is cached to run processing only once.
 > > 
 > > > ### **Pre-Computing Methods**
 > > > The following methods are used for pre-computing reasons, and are internally cached on the `Expression` object itself. 
 > > > 
 > > > It may be helpful, so it was decided to open for user usage:
-> > > * `.IsMalformedStructure`
+> > > * **`.IsMalformedStructure`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsIndefiniteness`
+> > > * **`.IsIndefiniteness`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsConstant`
+> > > * **`.IsConstant`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsZero`
+> > > * **`.IsZero`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsAbsoluteOne`
+> > > * **`.IsAbsoluteOne`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsEuler`
+> > > * **`.IsEuler`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsFraction`
+> > > * **`.IsFraction`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsInteger`
+> > > * **`.IsInteger`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsEvenInteger`
+> > > * **`.IsEvenInteger`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsOddInteger`
+> > > * **`.IsOddInteger`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
-> > > * `.IsSignalInvertible`
+> > > * **`.IsSignalInvertible`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return a boolean reporting the result.
 > > >     - Basically tells if the overall signal of nested `Expression` objects may be simplified with a single signal inversion.
 > > >     - It is approximate of `.IsNegative` behavior, but no quite the same. 
-> > > * `.IsNegative`
+> > > * **`.IsNegative`**
 > > >     - Computes the result of the whole `Expression` tree.
 > > >     - Return two booleans:
 > > >         - First reporting the result.
@@ -410,10 +430,10 @@
 > 
 > > ## **Least Squares Component**
 > > > ### **Constructor Methods**
-> > > * `algebra_numeric_method.NewLeastSquares`
+> > > * **`algebra_numeric_method.NewLeastSquares`**
 > > >     - Creates a brand new `LeastSquares` object.
 > > >     - Receives a `string` as parameter, it will copy it in any equation it produces as the signature.
-> > > * `.BaseOn`
+> > > * **`.BaseOn`**
 > > >   - Defines the basis functions for the least squares operation using the structure of the provided equation.
 > > >   - Since least squares works by adjusting the coefficients of given terms (see **[Wiki](https://en.wikipedia.org/wiki/Least_squares)**), `Expression` type determines how the basis is extracted:
 > > >       - `Sum` **(Recommended)**: The primary type for multi-term regression. The library treats every immediate child of the `Sum` as an independent basis function.
@@ -421,24 +441,23 @@
 > > >       - All Other Types: The entire expression is treated as a single basis function with one coefficient to be adjusted.
 > > 
 > > > ### **Action Methods**
-> > > * `.Solve`
+> > > * **`.Solve`**
 > > >   - Solves the least squares problem for the given `Frame` of points and returns a new `Equation` object.
 > > >   - The returned `Equation` object follows the structure defined in `LeastSquare.Base`, but with all coefficients calculated to minimize the sum of squared residuals.
 > > >   - This method does not modify the existing `LeastSquares` instance, and is memory safe for the brand new `Equation` object returned.
 > 
 > > ## **Frame Component**
 > > > ### **Constructor Methods**
-> > > * `.AddPoint`
+> > > * **`.AddPoint`**
 > > >   - Add a cartesian point into the frame.
 > > 
 > > > ### **Action Methods**
-> > > * `.Sort`
+> > > * **`.Sort`**
 > > >   - Sorts the data within the `Frame` according to the specified sorting strategy.
-> > > * `.String`
+> > > * **`.String`**
 > > >   - Returns a human-readable representation of the `Frame`.
-> > >   - Compatible with `fmt.Printf(%s)` callings.
 > > >   - Implements the `fmt.Stringer` interface for seamless integration with print functions.
-> > > * `.CSV`
+> > > * **`.CSV`**
 > > >   - Serializes the `Frame` into a text format optimized for spreadsheet compatibility.
 > > >   - If `Frame.Name` is populated, the first line of the output will be the name followed by a newline.
 > > >   - The data is always preceded by the fixed header line: `x;y`.
@@ -575,13 +594,13 @@
 
 > # **KNOWN ISSUES**
 > > ## **Expression Component**
-> > > With exception of `Execute()` method, it is well known that the library doesn't handle well multiple equal `Symbol()` leafs, specially at `Equal()` callings.
+> > > With exception of `.Solve()` method, it is well known that the library doesn't handle well multiple equal `Symbol` leafs, specially at `.Equal()` callings.
 > > >
-> > > We expect to solve this once a `Simplify()` method is introduced, and its helpers be able to temporarily simplify redundant, or even unnecessary, expression branches/leafs.
+> > > We expect to solve this once a `.Simplify()` method is introduced, and its helpers be able to temporarily simplify redundant, or even unnecessary, expression branches/leafs.
 > >
-> > > `Execute()` method will not care for true symbology, any variable will be treated as "x" variable at a 2d equation behavior.
+> > > `.Solve()` method will not care for true symbology, any variable will be treated as "x" variable at a 2d equation behavior.
 > > >
-> > > We expect to solve this in the future introducing an object as argument for `Execute()` linking a value to a symbol, but special attention should be given for simplicity be kept.
+> > > We expect to solve this in the future introducing an object as argument for `.Solve()` linking a value to a symbol, but special attention should be given for simplicity be kept.
 > > 
 > > > The trigonometric functions only support `Sine`, `Cosine` and `Tangent`. 
 > > > 

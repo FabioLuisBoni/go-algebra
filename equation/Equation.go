@@ -20,29 +20,73 @@ package algebra_equation
 import (
 	"fmt"
 
-	algebra_expression "github.com/FabioLuisBoni/go-algebra/equation/expression"
+	algebra "github.com/FabioLuisBoni/go-algebra/equation/expression"
 )
 
 type Equation struct {
 	Signature  string
-	Expression *algebra_expression.Expression
+	Expression *algebra.Expression
 }
 
 func NewEquation(signature string) *Equation {
 	return &Equation{
 		Signature:  signature,
-		Expression: &algebra_expression.Expression{},
+		Expression: &algebra.Expression{},
 	}
 }
 
-func (equation *Equation) Evaluate(variable float64) (result float64) {
-	return equation.Expression.Execute(variable)
-}
-
-func (equation *Equation) SetExpression(expression *algebra_expression.Expression) *Equation {
+func (equation *Equation) SetExpression(expression *algebra.Expression) *Equation {
 	equation.Expression = expression
 
 	return equation
+}
+
+func (equation *Equation) Sum(expression *algebra.Expression, others ...*algebra.Expression) *Equation {
+	var toSum []*algebra.Expression = make([]*algebra.Expression, len(others))
+	for i, other := range others {
+		toSum[i] = other.Clone()
+	}
+
+	equation.Expression.Sum(expression.Clone(), toSum...)
+
+	return equation
+}
+
+func (equation *Equation) Subtract(expression *algebra.Expression, others ...*algebra.Expression) *Equation {
+	var toSubtract []*algebra.Expression = make([]*algebra.Expression, len(others))
+	for i, other := range others {
+		toSubtract[i] = other.Clone()
+	}
+
+	equation.Expression.Subtract(expression.Clone(), toSubtract...)
+
+	return equation
+}
+
+func (equation *Equation) Multiply(expression *algebra.Expression, others ...*algebra.Expression) *Equation {
+	var toMultiply []*algebra.Expression = make([]*algebra.Expression, len(others))
+	for i, other := range others {
+		toMultiply[i] = other.Clone()
+	}
+
+	equation.Expression.Multiply(expression.Clone(), toMultiply...)
+
+	return equation
+}
+
+func (equation *Equation) Divide(expression *algebra.Expression, others ...*algebra.Expression) *Equation {
+	var toDivide []*algebra.Expression = make([]*algebra.Expression, len(others))
+	for i, other := range others {
+		toDivide[i] = other.Clone()
+	}
+
+	equation.Expression.Divide(expression.Clone(), toDivide...)
+
+	return equation
+}
+
+func (equation *Equation) Solve(variable float64) (result float64) {
+	return equation.Expression.Solve(variable)
 }
 
 func (equation *Equation) String() string {

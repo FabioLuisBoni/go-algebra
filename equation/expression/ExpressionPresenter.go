@@ -145,7 +145,7 @@ func formatAddition(expression *Expression) (result string) {
 
 	for _, branch := range branches {
 		if branch.IsConstant() && branch.Type != SYMBOL {
-			constantSum += branch.Execute(EXECUTE_CONSTANT_PLACEHOLDER) // Using IsConstant() guarantees Execute will always return the same value.
+			constantSum += branch.Solve(SOLVE_CONSTANT_PLACEHOLDER) // Using IsConstant() guarantees Solve will always return the same value.
 			continue
 		}
 
@@ -252,8 +252,8 @@ func formatMultiplication(expression *Expression) (result string) {
 			continue
 		}
 
-		if branch.IsConstant() && branch.Type != SYMBOL { // Remove sign from numeric terms by absolute accumulation. Using IsConstant() ensures Execute is stable.
-			var value float64 = branch.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+		if branch.IsConstant() && branch.Type != SYMBOL { // Remove sign from numeric terms by absolute accumulation. Using IsConstant() ensures Solve is stable.
+			var value float64 = branch.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 			numericAccumulator *= math.Abs(value)
 			continue
 		}
@@ -319,7 +319,7 @@ func formatPower(expression *Expression) string {
 	}
 
 	if expression.IsConstant() {
-		return algebraicString(Float(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)))
+		return algebraicString(Float(expression.Solve(SOLVE_CONSTANT_PLACEHOLDER)))
 	}
 
 	negative, _ := exponent.IsNegative()
@@ -342,7 +342,7 @@ func formatExp(expression *Expression) string {
 	}
 
 	if expression.IsConstant() {
-		return algebraicString(Float(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)))
+		return algebraicString(Float(expression.Solve(SOLVE_CONSTANT_PLACEHOLDER)))
 	}
 
 	negative, _ := expression.Arguments[0].IsNegative()

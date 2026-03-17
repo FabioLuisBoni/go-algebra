@@ -25,6 +25,2058 @@ import (
 	algebraic "github.com/FabioLuisBoni/go-algebra/equation/expression"
 )
 
+func TestIsMalformedStructureExpressionCaseFailure(t *testing.T) {
+	t.Logf("testing IsMalformedStructure for Expression\n\n")
+	var key uint64 = uint64(algebraic.CACHE_IS_MALFORMED_STRUCTURE)
+	var mask uint64 = 0x3 << key
+
+	{ // CASE TRUE
+		var expectedStatus uint64 = (algebraic.CACHE_MASK_RAN | algebraic.CACHE_MASK_RESULT) << key
+
+		{ // CASE EMPTY EXPRESSION
+			var expression *algebraic.Expression = &algebraic.Expression{}
+
+			var result bool = expression.IsMalformedStructure()
+
+			if result != true {
+				t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+			}
+
+			if (expression.Cache.Evaluated & mask) != expectedStatus {
+				t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+					bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+					bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+				)
+			}
+		}
+
+		{ // INTEGER CASES
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.INTEGER,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.INTEGER,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:      algebraic.INTEGER,
+					Arguments: []*algebraic.Expression{algebraic.Int(10)},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // FLOAT CASES
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.FLOAT,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.FLOAT,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:      algebraic.FLOAT,
+					Arguments: []*algebraic.Expression{algebraic.Float(10.5)},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // SYMBOL CASES
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.SYMBOL,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.SYMBOL,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:      algebraic.SYMBOL,
+					Arguments: []*algebraic.Expression{algebraic.Symbol("x")},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE ADDITION
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ADDITION,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.ADDITION,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ADDITION,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ADDITION,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE MULTIPLICATION
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.MULTIPLICATION,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.MULTIPLICATION,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.MULTIPLICATION,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.MULTIPLICATION,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE POWER
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.POWER,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.POWER,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.POWER,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.POWER,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.POWER,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+						algebraic.Int(2),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE EXPONENTIAL
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.EXPONENTIAL,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.EXPONENTIAL,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.EXPONENTIAL,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.EXPONENTIAL,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE SINE
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.SINE,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.SINE,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.SINE,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.SINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE COSINE
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.COSINE,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.COSINE,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.COSINE,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.COSINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE TANGENT
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.TANGENT,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.TANGENT,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.TANGENT,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.TANGENT,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE ARCSINE
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCSINE,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.ARCSINE,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCSINE,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCSINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE ARCCOSINE
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCCOSINE,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.ARCCOSINE,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCCOSINE,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCCOSINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE ARCTANGENT
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCTANGENT,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.ARCTANGENT,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCTANGENT,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ARCTANGENT,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE HYPERBOLIC_SINE
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_SINE,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.HYPERBOLIC_SINE,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_SINE,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_SINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE HYPERBOLIC_COSINE
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_COSINE,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.HYPERBOLIC_COSINE,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_COSINE,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_COSINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE HYPERBOLIC_TANGENT
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_TANGENT,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.HYPERBOLIC_TANGENT,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_TANGENT,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_TANGENT,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE HYPERBOLIC_ARCSINE
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCSINE,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.HYPERBOLIC_ARCSINE,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCSINE,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCSINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE HYPERBOLIC_ARCCOSINE
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCCOSINE,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.HYPERBOLIC_ARCCOSINE,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCCOSINE,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCCOSINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE HYPERBOLIC_ARCTANGENT
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCTANGENT,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.HYPERBOLIC_ARCTANGENT,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCTANGENT,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.HYPERBOLIC_ARCTANGENT,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE LOGARITHMIC
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.LOGARITHMIC,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.LOGARITHMIC,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.LOGARITHMIC,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.LOGARITHMIC,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Symbol("x"),
+						algebraic.Float(10.1),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // CASE NESTED
+			{
+				var expression *algebraic.Expression = algebraic.Pow(
+					algebraic.Int(2),
+					&algebraic.Expression{
+						Type: algebraic.INTEGER,
+					},
+				)
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != true {
+					t.Errorf("\nexpected: %t\ngot     : %t", true, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+	}
+
+	{ // CASE FALSE
+		var expectedStatus uint64 = algebraic.CACHE_MASK_RAN << key
+
+		{ // LEAF CASES
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.INTEGER,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var value float64
+
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type:  algebraic.FLOAT,
+					Value: &value,
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.SYMBOL,
+					Name: "x",
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // OPERATION FAMILY CASES
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ADDITION,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.ADDITION,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+						algebraic.Symbol("x"),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.MULTIPLICATION,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.MULTIPLICATION,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+						algebraic.Symbol("x"),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+
+		{ // FUNCTION FAMILY CASES
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.POWER,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Float(10.5),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.EXPONENTIAL,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.SINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.COSINE,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.TANGENT,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.LOGARITHMIC,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+
+			{
+				var expression *algebraic.Expression = &algebraic.Expression{
+					Type: algebraic.LOGARITHMIC,
+					Arguments: []*algebraic.Expression{
+						algebraic.Int(10),
+						algebraic.Symbol("x"),
+					},
+				}
+
+				var result bool = expression.IsMalformedStructure()
+
+				if result != false {
+					t.Errorf("\nexpected: %t\ngot     : %t", false, result)
+				}
+
+				if (expression.Cache.Evaluated & mask) != expectedStatus {
+					t.Errorf("error with pre-computed cache.\nbits expected: %0*b\nbits got     : %0*b",
+						bits.Len64(uint64(mask>>key)), expectedStatus>>key,
+						bits.Len64(uint64(mask>>key)), (expression.Cache.Evaluated&mask)>>key,
+					)
+				}
+			}
+		}
+	}
+
+	t.Logf("finished testing IsMalformedStructure for Expression\n\n")
+}
+
+func TestIsIndefinitenessExpressionCaseFailure(t *testing.T) {
+	t.Logf("testing IsIndefiniteness for Expression\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing IsIndefiniteness for Expression\n\n")
+}
+
 func TestIsConstantExpression(t *testing.T) {
 	t.Logf("testing IsConstant for Expression\n\n")
 	var key uint64 = uint64(algebraic.CACHE_IS_CONSTANT)
@@ -2047,6 +4099,7 @@ func TestIsZeroExpression(t *testing.T) {
 		t.Logf("finished testing IsZero for Expression CASE FALSE\n\n")
 	}
 
+	// t.Errorf("not tested")
 	t.Logf("finished testing IsZero for Expression\n\n")
 }
 
@@ -2619,6 +4672,7 @@ func TestIsAbsoluteOneExpression(t *testing.T) {
 		t.Logf("finished testing IsAbsoluteOne for Expression CASE FALSE\n\n")
 	}
 
+	// t.Errorf("not tested")
 	t.Logf("finished testing IsAbsoluteOne for Expression\n\n")
 }
 
@@ -2755,7 +4809,20 @@ func TestIsEulerExpression(t *testing.T) {
 		t.Logf("finished testing IsEuler for Expression CASE FALSE\n\n")
 	}
 
+	// t.Errorf("not tested")
 	t.Logf("finished testing IsEuler for Expression\n\n")
+}
+
+func TestIsFractionExpressionCaseFailure(t *testing.T) {
+	t.Logf("testing IsFraction for Expression\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing IsFraction for Expression\n\n")
+}
+
+func TestIsIntegerExpressionCaseFailure(t *testing.T) {
+	t.Logf("testing IsInteger for Expression\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing IsInteger for Expression\n\n")
 }
 
 func TestIsEvenIntegerExpression(t *testing.T) {

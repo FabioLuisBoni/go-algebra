@@ -18,7 +18,6 @@ Copyright (c) 2026 Fabio Luis Boni - MIT License
 package algebra_numeric_method
 
 import (
-	"errors"
 	"fmt"
 	"math"
 
@@ -81,7 +80,7 @@ func (method *LeastSquares) Solve(frame algebra_frame.Frame) (equation *algebra_
 	for i := range pointQuantity {
 		X[i] = make([]float64, termsQuantity)
 		for j := range termsQuantity {
-			X[i][j] = method.Base[j].Execute(frame.Point[i].X)
+			X[i][j] = method.Base[j].Solve(frame.Point[i].X)
 		}
 		y[i] = frame.Point[i].Y
 	}
@@ -142,7 +141,7 @@ func solveLinearSystem(A [][]float64, b []float64) ([]float64, error) {
 		b[i], b[maxRow] = b[maxRow], b[i]
 
 		if math.Abs(A[i][i]) < 1e-12 {
-			return nil, errors.New("singular matrix")
+			return nil, fmt.Errorf("singular matrix")
 		}
 
 		for k := i + 1; k < n; k++ {

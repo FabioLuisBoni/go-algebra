@@ -133,27 +133,6 @@ func Exp(exponent *Expression) *Expression {
 	}
 }
 
-func Ln(operation *Expression) *Expression {
-	return &Expression{
-		Type: LOGARITHMIC,
-
-		Arguments: []*Expression{
-			operation,
-		},
-	}
-}
-
-func Log(base *Expression, operation *Expression) *Expression {
-	return &Expression{
-		Type: LOGARITHMIC,
-
-		Arguments: []*Expression{
-			operation,
-			base,
-		},
-	}
-}
-
 func Sin(operation *Expression) *Expression {
 	return &Expression{
 		Type: SINE,
@@ -177,6 +156,27 @@ func Cos(operation *Expression) *Expression {
 func Tan(operation *Expression) *Expression {
 	return &Expression{
 		Type: TANGENT,
+
+		Arguments: []*Expression{
+			operation,
+		},
+	}
+}
+
+func Log(base *Expression, operation *Expression) *Expression {
+	return &Expression{
+		Type: LOGARITHMIC,
+
+		Arguments: []*Expression{
+			operation,
+			base,
+		},
+	}
+}
+
+func Ln(operation *Expression) *Expression {
+	return &Expression{
+		Type: LOGARITHMIC,
 
 		Arguments: []*Expression{
 			operation,
