@@ -27,7 +27,7 @@ const (
 )
 
 const APPROXIMATION_EPSILON float64 = 1e-9
-const EXECUTE_CONSTANT_PLACEHOLDER float64 = 2
+const SOLVE_CONSTANT_PLACEHOLDER float64 = 2
 
 /*
 Evaluates if the Expression object structure is valid for equation representation.
@@ -106,12 +106,12 @@ func (expression *Expression) IsIndefiniteness() bool {
 				* negative^fraction results in a complex number.
 		*/
 
-		baseNegative, _ := expression.Arguments[0].IsNegative()
-
-		if expression.Arguments[0].IsZero() && (expression.Arguments[1].IsZero() || baseNegative) {
+		exponentNegative, _ := expression.Arguments[1].IsNegative()
+		if expression.Arguments[0].IsZero() && (expression.Arguments[1].IsZero() || exponentNegative) {
 			return expression.Cache.setIndefiniteness(true)
 		}
 
+		baseNegative, _ := expression.Arguments[0].IsNegative()
 		if baseNegative && expression.Arguments[1].IsFraction() {
 			return expression.Cache.setIndefiniteness(true)
 		}
@@ -280,7 +280,7 @@ func (expression *Expression) IsZero() bool {
 		return expression.Cache.setZero(false)
 	}
 
-	return expression.Cache.setZero(isApproximate(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER), 0))
+	return expression.Cache.setZero(isApproximate(expression.Solve(SOLVE_CONSTANT_PLACEHOLDER), 0))
 }
 
 /*
@@ -301,7 +301,7 @@ func (expression *Expression) IsAbsoluteOne() bool {
 		return expression.Cache.setAbsoluteOne(false)
 	}
 
-	return expression.Cache.setAbsoluteOne(isApproximate(math.Abs(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)), 1))
+	return expression.Cache.setAbsoluteOne(isApproximate(math.Abs(expression.Solve(SOLVE_CONSTANT_PLACEHOLDER)), 1))
 }
 
 /*
@@ -320,7 +320,7 @@ func (expression *Expression) IsEuler() bool {
 		return expression.Cache.setEuler(false)
 	}
 
-	return expression.Cache.setEuler(isApproximate(expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER), math.E))
+	return expression.Cache.setEuler(isApproximate(expression.Solve(SOLVE_CONSTANT_PLACEHOLDER), math.E))
 }
 
 func (expression *Expression) IsFraction() bool {
@@ -332,7 +332,7 @@ func (expression *Expression) IsFraction() bool {
 		return expression.Cache.setFraction(false)
 	}
 
-	var value float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var value float64 = expression.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 	var rounded float64 = math.Round(value)
 
 	return expression.Cache.setFraction(!isApproximate(value, rounded))
@@ -347,7 +347,7 @@ func (expression *Expression) IsInteger() bool {
 		return expression.Cache.setInteger(false)
 	}
 
-	var value float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var value float64 = expression.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 	var rounded float64 = math.Round(value)
 
 	return expression.Cache.setInteger(isApproximate(value, rounded))
@@ -362,7 +362,7 @@ func (expression *Expression) IsEvenInteger() bool {
 		return expression.Cache.setEvenInteger(false)
 	}
 
-	var value float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var value float64 = expression.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 	var rounded float64 = math.Round(value)
 
 	if !isApproximate(value, rounded) {
@@ -381,7 +381,7 @@ func (expression *Expression) IsOddInteger() bool {
 		return expression.Cache.setOddInteger(false)
 	}
 
-	var value float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var value float64 = expression.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 	var rounded float64 = math.Round(value)
 
 	if !isApproximate(value, rounded) {
@@ -431,7 +431,7 @@ func (expression *Expression) IsSignalInvertible() bool {
 				return expression.Cache.setSignalInvertible(false)
 			}
 
-			total += branch.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+			total += branch.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 		}
 
 		return expression.Cache.setSignalInvertible(total < 0)
@@ -448,7 +448,7 @@ func (expression *Expression) IsSignalInvertible() bool {
 
 	case POWER:
 		if expression.Arguments[0].IsConstant() && expression.Arguments[1].IsOddInteger() {
-			if expression.Arguments[0].Execute(EXECUTE_CONSTANT_PLACEHOLDER) < 0 {
+			if expression.Arguments[0].Solve(SOLVE_CONSTANT_PLACEHOLDER) < 0 {
 				return expression.Cache.setSignalInvertible(true)
 			}
 		}
@@ -497,7 +497,7 @@ func (expression *Expression) IsNegative() (negative bool, applicable bool) {
 		return expression.Cache.setNegative(false, false)
 	}
 
-	var result float64 = expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER)
+	var result float64 = expression.Solve(SOLVE_CONSTANT_PLACEHOLDER)
 	if isApproximate(result, 0) {
 		result = 0
 	}
@@ -591,7 +591,7 @@ func piMultiplier(expression *Expression) (value float64, applicable bool) {
 			return 0, false
 		}
 
-		return expression.Execute(EXECUTE_CONSTANT_PLACEHOLDER) / math.Pi, true
+		return expression.Solve(SOLVE_CONSTANT_PLACEHOLDER) / math.Pi, true
 	}
 }
 
