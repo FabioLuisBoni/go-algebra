@@ -26,8 +26,38 @@ import (
 	algebra_expression "github.com/FabioLuisBoni/go-algebra/equation/expression"
 )
 
-func TestEvaluateEquation(t *testing.T) {
-	t.Logf("testing Evaluate for Equation\n\n")
+func TestSetExpressionEquation(t *testing.T) {
+	t.Logf("testing SetExpression for Equation\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing SetExpression for Equation\n\n")
+}
+
+func TestSumEquation(t *testing.T) {
+	t.Logf("testing Sum for Equation\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing Sum for Equation\n\n")
+}
+
+func TestSubtractEquation(t *testing.T) {
+	t.Logf("testing Subtract for Equation\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing Subtract for Equation\n\n")
+}
+
+func TestMultiplyEquation(t *testing.T) {
+	t.Logf("testing Multiply for Equation\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing Multiply for Equation\n\n")
+}
+
+func TestDivideEquation(t *testing.T) {
+	t.Logf("testing Divide for Equation\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing Divide for Equation\n\n")
+}
+
+func TestSolveEquation(t *testing.T) {
+	t.Logf("testing Solve for Equation\n\n")
 	var x float64 = 5
 
 	var expected float64 = (math.Pow(x, 2) / 2) + (math.Sin(x) * math.Cos(x))
@@ -55,13 +85,13 @@ func TestEvaluateEquation(t *testing.T) {
 		),
 	)
 
-	var result float64 = equation.Evaluate(x)
+	var result float64 = equation.Solve(x)
 
 	if result != expected {
 		t.Errorf("\nexpected: %.25f\ngot     : %.25f", expected, result)
 	}
 
-	t.Logf("finished testing Evaluate for Equation\n\n")
+	t.Logf("finished testing Solve for Equation\n\n")
 }
 
 func TestStringEquation(t *testing.T) {

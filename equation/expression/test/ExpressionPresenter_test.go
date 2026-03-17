@@ -2356,3 +2356,45 @@ func TestStringExpressionCasePowerHandlingParenthesisWhenNestedUnImpactfulPieces
 
 	t.Logf("finished testing String for Expression CASE POWER HANDLING PARENTHESIS WHEN NESTED UN-IMPACTFUL PIECES\n\n")
 }
+
+func TestStringExpressionCaseAdditionWithNestedPower(t *testing.T) {
+	t.Logf("testing String for Expression CASE ADDITION WITH NESTED POWER\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing String for Expression CASE ADDITION WITH NESTED POWER\n\n")
+}
+
+func TestStringExpressionCaseMultiplicationWithNestedPower(t *testing.T) {
+	t.Logf("testing String for Expression CASE MULTIPLICATION WITH NESTED POWER\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing String for Expression CASE MULTIPLICATION WITH NESTED POWER\n\n")
+}
+
+func TestStringExpressionCaseExponential(t *testing.T) {
+	t.Logf("testing String for Expression CASE EXPONENTIAL\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing String for Expression CASE EXPONENTIAL\n\n")
+}
+
+func TestStringExpressionCaseSine(t *testing.T) {
+	t.Logf("testing String for Expression CASE SINE\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing String for Expression CASE SINE\n\n")
+}
+
+func TestStringExpressionCaseCosine(t *testing.T) {
+	t.Logf("testing String for Expression CASE COSINE\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing String for Expression CASE COSINE\n\n")
+}
+
+func TestStringExpressionCaseTangent(t *testing.T) {
+	t.Logf("testing String for Expression CASE TANGENT\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing String for Expression CASE TANGENT\n\n")
+}
+
+func TestStringExpressionCaseLogarithm(t *testing.T) {
+	t.Logf("testing String for Expression CASE LOGARITHM\n\n")
+	// t.Errorf("not tested")
+	t.Logf("finished testing String for Expression CASE LOGARITHM\n\n")
+}
