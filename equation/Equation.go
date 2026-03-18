@@ -92,3 +92,43 @@ func (equation *Equation) Solve(variable float64) (result float64) {
 func (equation *Equation) String() string {
 	return fmt.Sprintf("%s = %s", equation.Signature, equation.Expression)
 }
+
+func (equation *Equation) IsMalformedStructure() bool {
+	return equation.Expression.IsMalformedStructure()
+}
+
+func (equation *Equation) IsIndefiniteness() bool {
+	return equation.Expression.IsIndefiniteness()
+}
+
+func (equation *Equation) IsConstant() bool {
+	return equation.Expression.IsConstant()
+}
+
+func (equation *Equation) IsZero() bool {
+	return equation.Expression.IsZero()
+}
+
+func (equation *Equation) IsAbsoluteOne() bool {
+	return equation.Expression.IsAbsoluteOne()
+}
+
+func (equation *Equation) IsEuler() bool {
+	return equation.Expression.IsEuler()
+}
+
+func (equation *Equation) IsFraction() bool {
+	return equation.Expression.IsFraction()
+}
+
+func (equation *Equation) IsInteger() bool {
+	return equation.Expression.IsInteger()
+}
+
+func (equation *Equation) IsEvenInteger() bool {
+	return equation.Expression.IsEvenInteger()
+}
+
+func (equation *Equation) IsOddInteger() bool {
+	return equation.Expression.IsOddInteger()
+}
