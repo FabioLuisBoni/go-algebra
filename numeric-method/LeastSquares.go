@@ -23,6 +23,7 @@ import (
 
 	algebra_equation "github.com/FabioLuisBoni/go-algebra/equation"
 	algebra_expression "github.com/FabioLuisBoni/go-algebra/equation/expression"
+	algebra_error "github.com/FabioLuisBoni/go-algebra/error"
 	algebra_frame "github.com/FabioLuisBoni/go-algebra/frame"
 )
 
@@ -65,13 +66,13 @@ func (method *LeastSquares) Solve(frame algebra_frame.Frame) (equation *algebra_
 	var termsQuantity int = len(method.Base)
 
 	if pointQuantity == 0 {
-		return nil, fmt.Errorf("no points provided")
+		return nil, fmt.Errorf("%w: no points provided", algebra_error.ErrMissingPoints)
 	}
 	if termsQuantity == 0 {
-		return nil, fmt.Errorf("no basis functions provided")
+		return nil, fmt.Errorf("%w to be used as basis", algebra_error.ErrMissingExpression)
 	}
 	if pointQuantity < termsQuantity {
-		return nil, fmt.Errorf("least squares requires at least same amount of points that equations terms: received %d points and %d equation terms", pointQuantity, termsQuantity)
+		return nil, fmt.Errorf("%w: least squares requires at least same amount of points that equations terms: received %d points and %d equation terms", algebra_error.ErrMissingPoints, pointQuantity, termsQuantity)
 	}
 
 	X := make([][]float64, pointQuantity) // Build matrix X
