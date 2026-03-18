@@ -15,10 +15,11 @@
 >       1. **[Equation Component](#equation-component)**
 >           1. **[Constructor Methods](#constructor-methods)**
 >           1. **[Action Methods](#action-methods)**
+>           1. **[Pre-Computing Methods](#pre-computing-methods)**
 >       1. **[Expression Component](#expression-component)**
 >           1. **[Constructor Methods](#constructor-methods-1)**
 >           1. **[Action Methods](#action-methods-1)**
->           1. **[Pre-Computing Methods](#pre-computing-methods)**
+>           1. **[Pre-Computing Methods](#pre-computing-methods-1)**
 >       1. **[Least Squares Component](#least-squares-component)**
 >           1. **[Constructor Methods](#constructor-methods-2)**
 >           1. **[Action Methods](#action-methods-2)**
@@ -272,6 +273,41 @@
 > > > * **`.String`**
 > > >     - Produces a simplified, algebraic friendly and **[GeoGebra](https://www.geogebra.org/graphing)** compatible string.
 > > >     - Implements the `fmt.Stringer` interface for seamless integration with print functions.
+> > 
+> > > ### **Pre-Computing Methods**
+> > > The following methods are used for pre-computing reasons, and are internally cached on the nested `Expression` object. 
+> > > 
+> > > It may be helpful, so it was decided to open for user usage:
+> > > * **`.IsMalformedStructure`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsIndefiniteness`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsConstant`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsZero`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsAbsoluteOne`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsEuler`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsFraction`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsInteger`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsEvenInteger`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
+> > > * **`.IsOddInteger`**
+> > >     - Computes the result of the whole `Expression` tree it holds.
+> > >     - Return a boolean reporting the result.
 >
 > > ## **Expression Component**
 > > > ### **Constructor Methods**
