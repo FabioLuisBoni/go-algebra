@@ -8775,8 +8775,6 @@ func TestIsNegativeExpression(t *testing.T) {
 			}
 
 			{
-				var expectedStatus uint64 = (algebraic.CACHE_MASK_RAN | algebraic.CACHE_MASK_APPLICABLE) << key
-
 				var expression *algebraic.Expression = algebraic.Float(1.1)
 
 				result, applicable := expression.IsNegative()
